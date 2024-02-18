@@ -1,0 +1,16 @@
+{
+  "name": "innovatesoft-solutions",
+  "version": "1.0.0",
+  "description": "Proyecto InnovateSoft Solutions",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "Christian Barquero",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mssql": "^10.0.2"
+  }
+}
