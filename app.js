@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const homeController = require('./controllers/homeController');
 
-//hola github
 const app = express();
 
 /// Configurar middleware para servir archivos estáticos desde la carpeta 'public'
