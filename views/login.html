@@ -79,14 +79,7 @@
                                 <a class="nav-link" href="/team">Equipo</a>
                             </li>
                             <li class="nav-item active">
-                                <% if (typeof username !=='undefined' ) { %>
-                                <!-- Si el usuario está autenticado, mostrar un enlace para cerrar sesión -->
-                                <a id="logoutLink" class="nav-link active" href="/logout">Cerrar sesión</a>
-                                <% } else { %>
-                                <!-- Si el usuario no está autenticado, mostrar un enlace para iniciar sesión -->
-                                <a id="loginLink" class="nav-link active" href="/login"> <i class="fa fa-user" aria-hidden="true"></i>
-                                    Login</a>
-                                <% } %>
+                                <a id="loginLink" class="nav-link active" href="/login"> <i class="fa fa-user" aria-hidden="true"></i> Login</a>
                             </li>
                             <form class="form-inline">
                                 <button class="btn  my-2 my-sm-0 nav_search-btn" type="submit">
@@ -118,7 +111,6 @@
             <a href="/register">No tienes una cuenta? Registrate</a>
         </form>
     </div>
-
 
     <!-- info section -->
 
@@ -249,7 +241,26 @@
     <!-- End Google Map -->
     <!-- Script JavaScript para hacer una solicitud AJAX -->
     <!-- Tu HTML -->
-
+    <script>
+        fetch('/login', {
+            method: 'POST',
+            body: JSON.stringify({ username: 'usuario', password: 'contraseña' }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Verificamos si el inicio de sesión fue exitoso
+                if (data.success && data.isAuthenticated) {
+                    console.log(data.message); // Esto imprimirá el mensaje en la consola
+                    // Aquí puedes realizar otras acciones dependiendo del éxito del inicio de sesión
+                } else {
+                    console.error('Inicio de sesión fallido:', data); // Manejar el inicio de sesión fallido
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
 
 </body>
 
