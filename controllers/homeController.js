@@ -18,7 +18,38 @@ async function registerUser(req, res) {
     }
 }
 
+async function loginUser(req, res) {
+    try {
+        const { username, password } = req.body;
+
+        // Verificar las credenciales del usuario en la base de datos
+        const isValidUser = await db.verifyCredentials(username, password);
+
+        if (isValidUser) {
+            // Guardar la información del usuario en la sesión
+            req.session.username = username;
+
+            // Redirigir a una página de éxito o realizar alguna otra acción después de registrar al usuario
+            res.send('¡Usuario logueado exitosamente!');
+
+            // Redirigir a la página de inicio o a donde sea necesario
+            //res.redirect('/');
+
+            // En tu controlador de inicio de sesión
+            req.session.username = username;
+
+        } else {
+            // Manejar la autenticación fallida, por ejemplo, renderizando un mensaje de error
+            res.render('login', { error: 'Credenciales inválidas' });
+        }
+    } catch (error) {
+        console.error('Error al iniciar sesión:', error);
+        res.status(500).send('Error al iniciar sesión');
+    }
+}
+
 // Exportar la función del controlador
 module.exports = {
-    registerUser
+    registerUser,
+    loginUser,
 };

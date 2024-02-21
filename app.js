@@ -1,49 +1,62 @@
 const express = require('express');
+const session = require('express-session');
 const path = require('path');
 const homeController = require('./controllers/homeController');
 
 const app = express();
 
-/// Configurar middleware para servir archivos estáticos desde la carpeta 'public'
+// Configurar middleware para servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Configurar middleware para el manejo de datos JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configurar una ruta para la página de registro y asignar el controlador
-app.post('/register', homeController.registerUser);
+const secretKey = 'mi-clave-secreta-ultrasegura-y-aleatoria';
 
-// Configurar una ruta para servir los archivos HTML desde la carpeta 'views'
+app.use(session({
+    secret: secretKey,
+    resave: false,
+    saveUninitialized: true
+}));
+
+// Configurar el motor de plantillas EJS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Configurar las rutas de tu aplicación
+app.post('/register', homeController.registerUser);
+app.post('/login', homeController.loginUser);
+
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+    res.render('index');
 });
 
 app.get('/about', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'about.html'));
+    res.render('about');
 });
 
 app.get('/service', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'service.html'));
+    res.render('service');
 });
 
 app.get('/why', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'why.html'));
+    res.render('why');
 });
 
 app.get('/team', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'team.html'));
+    res.render('team');
 });
 
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'login.html'));
+    res.render('login');
 });
 
 app.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'register.html'));
+    res.render('register');
 });
 
-// Escucha en el puerto 3000
+// Escuchar en el puerto 3000
 app.listen(3000, () => {
     console.log('Servidor iniciado en http://localhost:3000');
 });

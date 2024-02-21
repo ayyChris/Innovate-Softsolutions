@@ -35,10 +35,34 @@ async function insertUser(username, password) {
     }
 }
 
+// Controlador para manejar la solicitud de inicio de sesión
+async function verifyCredentials(username, password) {
+    try {
+        // Realiza una consulta SQL para buscar un usuario con el nombre de usuario y contraseña proporcionados
+        const query = `SELECT * FROM Users WHERE Username = '${username}' AND password = '${password}'`;
+
+        // Ejecuta la consulta
+        const result = await sql.query(query);
+
+        // Si la consulta devuelve algún resultado, significa que las credenciales son válidas
+        if (result && result.recordset.length > 0) {
+            return true; // Las credenciales son válidas
+        } else {
+            return false; // Las credenciales no son válidas
+        }
+    } catch (error) {
+        console.error('Error al verificar las credenciales del usuario:', error);
+        throw error; // Puedes manejar el error según sea necesario
+    }
+}
+
+
+
 connectToDatabase();
 
 // Exporta la función para que esté disponible en otros archivos
 module.exports = {
     connectToDatabase,
-    insertUser
+    insertUser,
+    verifyCredentials
 };
