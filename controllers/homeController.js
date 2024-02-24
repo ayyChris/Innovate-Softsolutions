@@ -43,7 +43,7 @@ async function loginUser(req, res) {
             res.render('login', { error: 'Credenciales inválidas' });
         }
     } catch (error) {
-        console.error('Error al iniciar sesión:', error);
+        //console.error('Error al iniciar sesión:', error);
         res.status(500).send('Error al iniciar sesión');
     }
 }
