@@ -7,7 +7,7 @@ async function registerUser(req, res) {
         const { username, password } = req.body;
 
         // Insertar el usuario en la base de datos
-        await db.insertUser(username, password);
+        await db.registerUserDB(username, password);
 
         // Redirigir a una página de éxito o realizar alguna otra acción después de registrar al usuario
         res.send('¡Usuario registrado exitosamente!');
@@ -23,33 +23,44 @@ async function loginUser(req, res) {
         const { username, password } = req.body;
 
         // Verificar las credenciales del usuario en la base de datos
-        const isValidUser = await db.verifyCredentials(username, password);
+        const isValidUser = await db.loginUserDB(username, password);
 
         if (isValidUser) {
-            // Guardar la información del usuario en la sesión
-            req.session.username = username;
-
-            // Redirigir a una página de éxito o realizar alguna otra acción después de registrar al usuario
-            res.send('¡Usuario logueado exitosamente!');
-
-            // Redirigir a la página de inicio o a donde sea necesario
-            //res.redirect('/');
-
-            // En tu controlador de inicio de sesión
-            req.session.username = username;
-
+            res.cookie('username', username);
+            // Enviar una SweetAlert de éxito
+            res.send('<script>alert("¡Inicio de sesión exitoso!"); window.location.href = "/buyServices";</script>');
         } else {
-            // Manejar la autenticación fallida, por ejemplo, renderizando un mensaje de error
-            res.render('login', { error: 'Credenciales inválidas' });
+            // Enviar una SweetAlert de error
+            res.send('<script>alert("¡Credenciales inválidas!"); window.location.href = "/login";</script>');
         }
     } catch (error) {
-        //console.error('Error al iniciar sesión:', error);
-        res.status(500).send('Error al iniciar sesión');
+        // Enviar una SweetAlert de error en caso de excepción
+        res.send('<script>alert("¡Ocurrió un error!"); window.location.href = "/login";</script>');
     }
 }
 
+
+async function getUserInfo(req, res) {
+    try {
+        const username = req.cookies.username;
+        const userInfo = await db.getUserInfoDB(username);
+        console.log("HOLA DESDE USERINFO", userInfo);
+        if (userInfo) {
+            res.status(200).json({
+                UserID: userInfo.UserID,
+                Username: userInfo.Username
+            });
+        } else {
+            res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+    } catch (error) {
+        console.error('Error al obtener la información del usuario:', error);
+        res.status(500).json({ error: 'Se produjo un error al procesar la solicitud' });
+    }
+}
 // Exportar la función del controlador
 module.exports = {
     registerUser,
     loginUser,
+    getUserInfo,
 };

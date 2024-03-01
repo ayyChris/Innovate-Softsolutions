@@ -939,6 +939,7 @@ a:focus {
 /*# sourceMappingURL=style.css.map */
 
 .login_container {
+  margin: 2rem, 2rem, 2rem, 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -991,5 +992,64 @@ a:focus {
 }
 
 #send:hover {
+  background-color: #007fa4;
+}
+
+.centered-box {
+  margin: 2rem auto;
+  /* Margen superior e inferior de 2rem y centrado horizontal */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 75vh;
+  background-color: #00204a;
+  /* Cambio de color de fondo */
+}
+
+.box {
+  background-color: #f8f8f9;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  max-width: 500px;
+}
+
+.detail-box h5 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: bold;
+  color: #0c0c0c;
+}
+
+.detail-box {
+  margin-bottom: 30px;
+}
+
+.detail-box label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #0c0c0c;
+}
+
+.detail-box input {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+}
+
+#showUserInfoButton {
+  width: 100%;
+  padding: 15px;
+  background-color: #00bbf0;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#showUserInfoButton:hover {
   background-color: #007fa4;
 }
