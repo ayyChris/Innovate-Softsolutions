@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             cardInfoArray.forEach(cardInfo => {
                 // Crear un nuevo elemento div para mostrar la información del carrito
                 const cardItem = document.createElement('div');
-                cardItem.classList.add('card');
+                cardItem.classList.add('card-item');
                 cardItem.innerHTML = `
                     <p>ID: ${cardInfo.id}</p>
                     <p>Servicio: ${cardInfo.service}</p>
