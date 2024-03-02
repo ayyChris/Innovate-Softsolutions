@@ -63,12 +63,12 @@
 
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav  ">
-                            <li class="nav-item">
+                            <li class="nav-item active">
                                 <a id="loginLink" class="nav-link" href="/card">
                                     <i class="fa fa-shopping-cart" aria-hidden="true"></i> Carrito
                                 </a>
                             </li>
-                            <li class="nav-item active">
+                            <li class="nav-item">
                                 <a class="nav-link" href="/buyServices">Comprar Servicios</a>
                             </li>
                             <li class="nav-item">
@@ -98,101 +98,28 @@
             <div class="container">
                 <div class="heading_container heading_center">
                     <h2>
-                        Compra nuestros <span>Servicios</span>
+                        Artículos en tu <span>Carrito de Compra</span>
                     </h2>
                     <p>
-                        Contamos con una amplia gama de servicios para satisfacer tus necesidades comerciales y
-                        tecnológicas.
+                        Aquí encontrarás los productos que has seleccionado para comprar. ¡Esperamos que encuentres lo que
+                        necesitas!
                     </p>
+                    <div id="cardGrid" class="container mt-5">
+                    </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="box">
-                            <div class="img-box">
-                                <img src="images/s3.png" alt="">
-                            </div>
-                            <div class="detail-box">
-                                <h5>
-                                    Soporte Especializado
-                                </h5>
-                                <p>
-                                    Ofrecemos asistencia técnica experta para garantizar un funcionamiento sin problemas de tus soluciones
-                                    tecnológicas.
-                                </p>
-                                <p>Precio: Consultar</p>
-                                <form id="support" method="POST" action="/buyServices">
-                                    <input type="hidden" name="service" value="Soporte Personalizado">
-                                    <button type="submit" class="custom-btn" class="btn btn-primary" name="buyServices">Agregar al carrito</button>
-                                </form>
-                                
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="box">
-                            <div class="img-box">
-                                <img src="images/desarrolloWeb.png" alt="">
-                            </div>
-                            <div class="detail-box">
-                                <h5>
-                                    Desarrollo web
-                                </h5>
-                                <p>
-                                    Desarrollo web personalizado para impulsar tu presencia en línea. Potencia tu marca con soluciones digitales a medida.
-                                </p>
-                                <p>Precio: $1000 - $5000</p>
-                                <form id="webService" method="POST" action="/buyServices">
-                                    <input type="hidden" name="service" value="Servicio Web">
-                                    <button type="submit" class="custom-btn" class="btn btn-primary" name="buyServices">Agregar al carrito</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="box">
-                            <div class="img-box">
-                                <img src="images/software-a-medida.png" alt="">
-                            </div>
-                            <div class="detail-box">
-                                <h5>
-                                    Software a medida
-                                </h5>
-                                <p>
-                                    Software a medida para optimizar tus procesos. Soluciones tecnológicas adaptadas a tus necesidades específicas.
-                                </p>
-                                <p>Precio: $2000 - $10000</p>
-                                <form id="software" method="POST" action="/buyServices">
-                                    <input type="hidden" name="service" value="Software a medida">
-                                    <button type="submit" class="custom-btn" class="btn btn-primary" name="contratar">Agregar al carrito</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="box">
-                            <div class="img-box">
-                                <img src="images/desarrollo-movil.png" alt="">
-                            </div>
-                            <div class="detail-box">
-                                <h5>
-                                    Aplicacion Móvil
-                                </h5>
-                                <p>
-                                    Desarrollo móvil personalizado para tu negocio. Aplicaciones que llevan tu empresa al alcance de tus clientes, donde
-                                    quiera que estén.
-                                </p>
-                                <p>Precio: $3000 - $15000</p>
-                                <form id="mobile" method="POST" action="/buyServices">
-                                    <input type="hidden" name="service" value="Aplicacion Movil">
-                                    <button type="submit" class="custom-btn" class="btn btn-primary" name="buyServices">Agregar al carrito</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div> 
-                </div>
+            </div>
+            <div class="btn-box">
+                <form id="card" method="POST" action="/buyCard">
+                    <input type="hidden" id="serviceIds" name="serviceIds" value="">
+                    <button type="submit" class="custom-btn btn btn-primary" name="buyServices">Comprar ahora</button>
+                </form>
             </div>
         </div>
     </section>
+
+
+
+    
 
     <!-- info section -->
 
@@ -323,7 +250,7 @@
     <!-- End Google Map -->
     <!-- Script JavaScript para hacer una solicitud AJAX -->
     <!-- Tu HTML -->
-
+    <script src="js/main.js"></script>
 
 </body>
 
