@@ -1076,3 +1076,36 @@ a:focus {
 .custom-btn:hover {
   background-color: #0099cc;
 }
+
+.register_container {
+  margin: 2rem, 2rem, 2rem, 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 75vh;
+  background-color: #00204a;
+  padding: 2%;
+}
+
+.register_form {
+  background-color: #f8f8f9;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  max-width: 500px;
+}
+
+.register_form h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: bold;
+  color: #0c0c0c;
+}
+
+#security_question {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+}

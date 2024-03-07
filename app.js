@@ -35,6 +35,8 @@ app.post('/buyServices', homeController.buyServices);
 
 //app.post('/myServices', homeController.myServices);
 
+app.post('/verify', homeController.verifyCode);
+
 // Configurar una ruta para servir los archivos HTML desde la carpeta 'views'
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
@@ -84,6 +86,9 @@ app.get('/card', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'card.html'));
 });
 
+app.get('/verify', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'verify.html'));
+});
 
 app.get('/logout', (req, res) => {
     res.clearCookie('username');
@@ -94,13 +99,9 @@ app.get('/getUserInfo', homeController.getUserInfo);
 
 app.get('/showCard', homeController.showCard);
 
-// Agrega un console.log para verificar el acceso a la ruta
-app.get('/showCard', (req, res, next) => {
-    console.log("Se accedió a la ruta /showCard");
-    next(); // Pasa al siguiente middleware
-}, homeController.showCard);
 
 // Escucha en el puerto 3000
-app.listen(3000, () => {
-    console.log('Servidor iniciado en http://localhost:3000');
+port = 3000
+app.listen(port, () => {
+    console.log(`Servidor iniciado en http://localhost:${port}`);
 });

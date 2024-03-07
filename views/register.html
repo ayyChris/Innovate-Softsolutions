@@ -95,9 +95,18 @@
         <!-- end header section -->
     </div>
 
-    <div class="login_container">
-        <form class="login_form" action="/register" method="POST"> <!-- Actualizado el atributo action -->
+    <div class="register_container">
+        <form class="register_form" action="/register" method="POST"> <!-- Actualizado el atributo action -->
             <h2>Registro</h2>
+            <div class="form_group">
+                <label for="full_name">Nombre completo</label>
+                <input type="full_name" id="full_name" name="full_name" placeholder="Ingresa tu nombre completo"
+                    required>
+            </div>
+            <div class="form_group">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" name="email" placeholder="Ingresa tu correo electrónico" required>
+            </div>
             <div class="form_group">
                 <label for="username">Usuario</label>
                 <input type="text" id="username" name="username" placeholder="Ingresa tu usuario" required>
@@ -107,29 +116,27 @@
                 <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required>
             </div>
             <div class="form_group">
-                <label for="email">Correo electrónico</label>
-                <input type="email" id="email" name="email" placeholder="Ingresa tu correo electrónico" required>
+                <label for="confirmPassword">Confirma tu contraseña</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirma tu contraseña" required>
             </div>
             <div class="form_group">
                 <label for="phone">Teléfono</label>
                 <input type="tel" id="phone" name="phone" placeholder="Ingresa tu número de teléfono" required>
             </div>
             <div class="form_group">
-                <label for="occupation">Ocupación</label>
-                <select id="occupation" name="occupation">
-                    <option value="estudiante">Estudiante</option>
-                    <option value="profesional">Profesional</option>
-                    <option value="empleado">Empleado</option>
-                    <option value="empresario">Empresario</option>
-                    <option value="freelancer">Freelancer</option>
-                    <option value="docente">Docente</option>
-                    <option value="artista">Artista</option>
-                    <option value="investigador">Investigador</option>
-                    <option value="ingeniero">Ingeniero</option>
-                    <option value="diseñador">Diseñador</option>
+                <label for="security_question">Pregunta de seguridad</label>
+                <select id="security_question" name="security_question">
+                    <option value="lugar_nacimiento">Nombre de tu lugar de nacimiento</option>
+                    <option value="mascota">Nombre de tu mascota</option>
+                    <option value="marca_primer_auto">Marca de tu primer auto</option>
+                    <option value="mejor_amigo">Nombre de tu mejor amigo/a</option>
                 </select>
             </div>
-
+            <div class="form_group">
+                <label for="security_answer">Respuesta</label>
+                <input type="text" id="security_answer" name="security_answer" placeholder="Ingresa tu respuesta de seguridad"
+                    required>
+            </div>
             <button id="send" type="submit">Registrarse</button> 
         </form>
     </div>
@@ -261,7 +268,8 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCh39n5U-4IoWpsVGUHWdqB6puEkhRLdmI&callback=myMap">
     </script>
     <!-- End Google Map -->
-
+    <script src="js/register.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
 </html>

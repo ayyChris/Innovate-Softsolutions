@@ -2,11 +2,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     try {
         const response = await fetch('/getUserInfo');
         const responseData = await response.json();
-        console.log("HOLA DESDE MAIN", responseData);
+        console.log("Informacion del usuario cargada correctamente: ", responseData);
 
         if (response.ok) {
-            document.getElementById("idUser").textContent = responseData.idUser;
+            document.getElementById("id_user").textContent = responseData.id_user;
+            document.getElementById("full_name").textContent = responseData.full_name;
+            document.getElementById("email").textContent = responseData.email;
             document.getElementById("username").textContent = responseData.username;
+            document.getElementById("phone").textContent = responseData.phone;
         } else {
             Swal.fire({
                 icon: 'error',
