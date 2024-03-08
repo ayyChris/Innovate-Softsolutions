@@ -105,10 +105,13 @@
                 <label for="password">Contraseña</label>
                 <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required>
             </div>
-            <button id="send" type="submit">Ingresar</button>
+            <button class="send" type="submit">Ingresar</button>
             <br>
             <br>
-            <a href="/register">No tienes una cuenta? Registrate</a>
+            <button id="recover" type="button" onclick="location.href='/recoverEnterEmail'">Recuperar cuenta</button>
+            <br>
+            <br>
+            <a id="noAccount" href="/register">No tienes una cuenta? Registrate</a>
         </form>
     </div>
 

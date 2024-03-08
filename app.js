@@ -24,20 +24,21 @@ app.use(session({
     saveUninitialized: true
 }));
 
-// Configurar una ruta para la página de registro y asignar el controlador
 app.post('/register', homeController.registerUser);
 
-// Configurar una ruta para la página de inicio de sesión y asignar el controlador
 app.post('/login', homeController.loginUser);
 
-//
 app.post('/buyServices', homeController.buyServices);
 
 //app.post('/myServices', homeController.myServices);
 
 app.post('/verify', homeController.verifyCode);
 
-// Configurar una ruta para servir los archivos HTML desde la carpeta 'views'
+app.post('/verifyRecover', homeController.verifyCodeRecover);
+
+app.post('/recoverEnterEmail', homeController.recoverEnterEmail);
+
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
@@ -88,6 +89,14 @@ app.get('/card', (req, res) => {
 
 app.get('/verify', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'verify.html'));
+});
+
+app.get('/recoverEnterEmail', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'recoverEnterEmail.html'));
+});
+
+app.get('/recoverEnterCode', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'recoverEnterCode.html'));
 });
 
 app.get('/logout', (req, res) => {

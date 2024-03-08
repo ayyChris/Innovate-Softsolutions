@@ -26,10 +26,26 @@ async function loginUser(req, res) {
     try {
         const { username, password } = req.body;
 
+        let failedAttempts = await db.getFailedVerificationAttempts(username);
+        console.log("failedAttemptsLogin", failedAttempts);
         // Verificar las credenciales del usuario en la base de datos
         const isValidUser = await db.loginUserDB(username, password);
 
+        // Verificar si el usuario está bloqueado
+        const isBlocked = await db.isUserBlocked(username);
+
+        if (isBlocked) {
+            await db.insertFailedAttempts(username);
+            await db.logAction(username, 'Inicio de sesion', 'Bloqueado');
+            // Si el usuario está bloqueado, mostrar un mensaje de alerta y redirigir a la página de inicio de sesión
+            res.send('<script>alert("¡Tu cuenta ha sido bloqueada! Por favor recupera cuenta."); window.location.href = "/login";</script>');
+            return;
+        }
+
         if (isValidUser) {
+            // Restablecer el contador de intentos fallidos si las credenciales son válidas
+            await db.resetFailedVerificationAttempts(username);
+
             // Generar un token de verificación
             const verificationToken = generateVerificationCode(6); // Código de 6 dígitos
 
@@ -46,10 +62,19 @@ async function loginUser(req, res) {
             // Redirigir al usuario a la página donde puede ingresar el código de verificación
             res.redirect('/verify');
         } else {
+            // Incrementar el contador de intentos fallidos solo si las credenciales son inválidas
+            failedAttempts += 1;
+            await db.insertFailedAttempts(username);
             await db.logAction(username, 'Inicio de sesion', 'Fallido');
-            // ! HACER QUE SI TIENE MAS DE 3 INTENTOS DE VERIFICACION, SE BLOQUEE LA CUENTA
-            // Enviar una SweetAlert de error si las credenciales son inválidas
-            res.send('<script>alert("¡Credenciales inválidas!"); window.location.href = "/login";</script>');
+            if (failedAttempts >= 3) {
+                // Bloquear la cuenta si se han excedido los intentos fallidos
+                await db.blockUserAccount(username);
+                await db.logAction(username, 'Bloqueo', 'Exitoso');
+                res.send('<script>alert("¡Cuenta bloqueada! Ha excedido el límite de intentos de verificación fallidos."); window.location.href = "/login";</script>');
+            } else {
+                // Enviar una SweetAlert de error si las credenciales son inválidas
+                res.send('<script>alert("¡Credenciales inválidas!"); window.location.href = "/login";</script>');
+            }
         }
     } catch (error) {
         // Enviar una SweetAlert de error en caso de excepción
@@ -57,6 +82,7 @@ async function loginUser(req, res) {
         res.send('<script>alert("¡Ocurrió un error al iniciar sesión!"); window.location.href = "/login";</script>');
     }
 }
+
 
 
 async function getUserInfo(req, res) {
@@ -159,26 +185,46 @@ async function verifyCode(req, res) {
         const username = req.cookies.username;
         const verificationCode = req.body.verificationCode;
 
-        // Verificar el código de verificación
+        // Obtener el número actual de intentos fallidos del usuario
+        let failedAttempts = await db.getFailedVerificationAttempts(username);
+        console.log("failedAttemptsVerify", failedAttempts);
+        // Verificar si el código de verificación es válido
         const isValidToken = await db.getTokenByUsernameAndToken(username, verificationCode);
 
         if (isValidToken) {
+            // Restablecer el contador de intentos fallidos si la verificación es exitosa
+            await db.resetFailedVerificationAttempts(username);
             await db.logAction(username, 'Verificacion', 'Exitosa');
-            // Redirigir al usuario a la página de servicios si el código es válido
-            res.redirect('/buyServices');
+            res.send('<script>alert("¡Código de verificación válido! ¡Inicio de sesión exitoso!"); window.location.href = "/buyServices";</script>');
         } else {
-            // ! HACER QUE SI TIENE MAS DE 3 INTENTOS DE VERIFICACION, SE BLOQUEE LA CUENTA
-            // ! ELIMINAR TOKENS ANTIGUOS
+            // Incrementar el contador de intentos fallidos
+            failedAttempts += 1;
+            await db.insertFailedAttempts(username);
+
             await db.logAction(username, 'Verificacion', 'Fallida');
-            res.send('<script>alert("¡Código de verificación inválido!"); window.location.href = "/verify";</script>');
+            // Verificar si el usuario ha excedido el límite de intentos fallidos (por ejemplo, 3)
+            if (failedAttempts >= 3) {
+                // Bloquear la cuenta si se han excedido los intentos fallidos
+                await db.blockUserAccount(username);
+                await db.logAction(username, 'Bloqueo', 'Exitoso');
+                res.send('<script>alert("¡Cuenta bloqueada! Ha excedido el límite de intentos de verificación fallidos."); window.location.href = "/login";</script>');
+            } else {
+                res.send('<script>alert("¡Código de verificación inválido!"); window.location.href = "/verify";</script>');
+            }
         }
     } catch (error) {
-        // Manejar errores
         console.error('Error al verificar el código de verificación:', error);
         res.status(500).send('Error interno del servidor');
     }
 }
 
+async function verifyCodeRecover(req, res) {
+
+}
+
+async function recoverEnterEmail(req, res) {
+    res.redirect("/recoverEnterCode")
+}
 
 // Exportar la función del controlador
 module.exports = {
@@ -190,5 +236,7 @@ module.exports = {
     showCard,
     generateVerificationCode,
     sendVerificationEmail,
-    verifyCode
+    verifyCode,
+    verifyCodeRecover,
+    recoverEnterEmail
 };

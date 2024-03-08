@@ -981,7 +981,7 @@ a:focus {
   border-radius: 8px;
 }
 
-#send {
+.send {
   width: 100%;
   padding: 15px;
   background-color: #00bbf0;
@@ -991,8 +991,22 @@ a:focus {
   transition: background-color 0.3s ease;
 }
 
-#send:hover {
+.send:hover {
   background-color: #007fa4;
+}
+
+#recover {
+  width: 100%;
+  padding: 15px;
+  background-color: #ffffff;
+  color: #00bbf0;
+  border: .5px solid #333;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#recover:hover {
+  background-color: #f8f8f9;
 }
 
 .centered-box-user {
@@ -1108,4 +1122,23 @@ a:focus {
   padding: 15px;
   border: 1px solid #cccccc;
   border-radius: 8px;
+}
+
+#noAccount {
+  color: #00bbf0;
+}
+
+#noAccount:hover {
+  color: #007fa4;
+}
+
+#userVerify {
+  color: #00bbf0;
+  font-weight: bold;
+}
+
+#recoverTitle {
+  color: #00bbf0;
+  font-weight: bold;
+  left: 50%;
 }

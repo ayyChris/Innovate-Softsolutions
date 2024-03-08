@@ -78,8 +78,8 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="/team">Equipo</a>
                             </li>
-                            <li class="nav-item active">
-                                <a id="loginLink" class="nav-link active" href="/login"> <i class="fa fa-user"
+                            <li class="nav-item">
+                                <a id="loginLink" class="nav-link" href="/login"> <i class="fa fa-user"
                                         aria-hidden="true"></i> Login</a>
                             </li>
                             <form class="form-inline">
@@ -96,12 +96,13 @@
     </div>
 
     <div class="login_container">
-        <form class="login_form" action="/verify" method="POST">
+        <form class="login_form" action="/recoverEnterEmail" method="POST">
             <div class="form_group">
-                <label for="verificationCode">Código de verificación enviado a <span id="userVerify"></span> </label>
-                <input type="text" id="verificationCode" placeholder="Ingresa el código de verificación" name="verificationCode" required>
-            </div>  
-                <button class="send" type="submit">Verificar</button>
+                <h2 id="recoverTitle">Recuperación</h2>
+                <label for="recoverEmail">Ingresa el correo electrónico asociado con tu cuenta para recuperarla</label>
+                <input type="text" id="recoverEmail" placeholder="Ingresa tu correo electrónico" name="recoverEmail" required>
+            </div>
+            <button class="send" type="submit">Siguiente</button>
         </form>
     </div>
 
@@ -239,5 +240,3 @@
 </body>
 
 </html>
-    
-

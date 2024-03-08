@@ -52,6 +52,7 @@ async function loginUserDB(username, password) {
         } else {
             return false; // Las credenciales no son válidas
         }
+        console.log(`Credenciales de ${username} verificadas en la base de datos.`);
     } catch (error) {
         console.error('Error al verificar las credenciales del usuario:', error);
         throw error; // Puedes manejar el error según sea necesario
@@ -79,6 +80,7 @@ async function getUserInfoDB(username) {
         } else {
             return null; // No se encontró ningún usuario con el nombre de usuario proporcionado
         }
+        console.log(`Información de ${username} obtenida de la base de datos.`);
     } catch (error) {
         console.error('Error al obtener la información del usuario:', error);
         throw error;
@@ -95,7 +97,7 @@ async function buyServicesDB(service, username) {
         await sql.query(query);
 
         // Retorna un mensaje de éxito
-        console.log(`Servicio ${service} comprado por el usuario ${username} correctamente.`);
+        console.log(`Servicio ${service} comprado por ${username} e insertado en la base de datos.`);
     } catch (error) {
         console.error('Error al comprar el servicio:', error);
         throw error;
@@ -120,6 +122,7 @@ async function showCardDB(username) {
         } else {
             return []; // Devuelve un array vacío si no se encontraron registros
         }
+        console.log(`Información del carrito de ${username} obtenida de la base de datos.`);
     } catch (error) {
         console.error('Error al obtener la información del usuario:', error);
         throw error;
@@ -128,6 +131,7 @@ async function showCardDB(username) {
 
 async function insertToken(username, token, expirationTime) {
     try {
+        deletePreviousTokens(username);
         const pool = await sql.connect(config);
         const formattedExpirationTime = expirationTime.toISOString(); // Convierte el objeto de fecha a una cadena ISO
         const query = `
@@ -135,6 +139,7 @@ async function insertToken(username, token, expirationTime) {
             VALUES ('${username}', '${token}', '${formattedExpirationTime}')
         `;
         const result = await pool.request().query(query);
+        console.log(`Token de ${username} insertado en la base de datos.`);
         return result.rowsAffected > 0;
     } catch (error) {
         console.error('Error al insertar token en la base de datos:', error);
@@ -142,6 +147,20 @@ async function insertToken(username, token, expirationTime) {
     }
 }
 
+async function deletePreviousTokens(username) {
+    try {
+        const pool = await sql.connect(config);
+        const query = `
+            DELETE FROM Tokens 
+            WHERE username = '${username}'
+        `;
+        const result = await pool.request().query(query);
+        console.log(`Tokens anteriores eliminados para el usuario ${username}`);
+    } catch (error) {
+        console.error('Error al eliminar tokens anteriores de la base de datos:', error);
+        throw error;
+    }
+}
 
 async function getTokenByUsernameAndToken(username, token) {
     try {
@@ -152,6 +171,7 @@ async function getTokenByUsernameAndToken(username, token) {
         `;
         const result = await pool.request().query(query);
         return result.recordset[0];
+        console.log(`Token de ${username} obtenido de la base de datos.`);
     } catch (error) {
         console.error('Error al obtener token de la base de datos:', error);
         throw error;
@@ -172,6 +192,7 @@ async function getEmail(username) {
         } else {
             return null; // No se encontró ningún usuario con el nombre de usuario proporcionado
         }
+        console.log(`Correo electrónico de ${username} obtenido de la base de datos.`);
     } catch (error) {
         console.error('Error al obtener el correo electrónico del usuario:', error);
         throw error;
@@ -186,12 +207,95 @@ async function logAction(username, action, details) {
             VALUES ('${username}', '${action}', '${details}')
         `;
         await pool.request().query(query);
-        console.log('Registro de acción insertado en la base de datos.');
+        console.log(`Registro de acción de ${action} insertado en la base de datos.`);
     } catch (error) {
         console.error('Error al insertar registro de acción en la base de datos:', error);
         throw error;
     }
 }
+
+async function insertFailedAttempts(username) {
+    try {
+        const pool = await sql.connect(config);
+        const query = `
+            INSERT INTO VerificationAttempts (username, action)
+            VALUES ('${username}', 'Fallida')
+        `;
+        await pool.request().query(query);
+        console.log(`Registro de intento de verificación fallido de ${username} insertado en la base de datos.`);
+    } catch (error) {
+        console.error('Error al insertar registro de VerificationAttempts en la base de datos:', error);
+        throw error;
+    }
+}
+
+
+async function getFailedVerificationAttempts(username) {
+    try {
+        const pool = await sql.connect(config);
+        const query = `
+            SELECT COUNT(*) AS failedAttempts
+            FROM VerificationAttempts
+            WHERE username = '${username}' and action = 'Fallida'
+        `;
+        const result = await pool.request().query(query);
+        console.log(`Intentos de verificación fallidos de ${username} obtenidos de la base de datos.`);
+        return result.recordset[0].failedAttempts;
+    } catch (error) {
+        console.error('Error al obtener intentos de verificación fallidos:', error);
+        throw error;
+    }
+}
+
+async function resetFailedVerificationAttempts(username) {
+    try {
+        const pool = await sql.connect(config);
+        const query = `
+            UPDATE VerificationAttempts
+            SET action = 'Recuperado'
+            WHERE username = '${username}' AND action = 'Fallida'
+        `;
+        const result = await pool.request().query(query);
+        console.log(`Intentos de verificación fallidos de ${username} restablecidos en la base de datos.`);
+        return result.rowsAffected > 0;
+    } catch (error) {
+        console.error('Error al actualizar los intentos de verificación fallidos:', error);
+        throw error;
+    }
+}
+
+async function blockUserAccount(username) {
+    try {
+        const pool = await sql.connect(config);
+        const query = `
+            UPDATE Users
+            SET status = 'inactive'
+            WHERE username = '${username}'
+        `;
+        const result = await pool.request().query(query);
+        return result.rowsAffected > 0;
+    } catch (error) {
+        console.error('Error al bloquear la cuenta del usuario:', error);
+        throw error;
+    }
+}
+
+async function isUserBlocked(username) {
+    try {
+        const pool = await sql.connect(config);
+        const query = `
+            SELECT status
+            FROM Users
+            WHERE username = '${username}' AND status = 'inactive'
+        `;
+        const result = await pool.request().query(query);
+        return result.recordset.length > 0;
+    } catch (error) {
+        console.error('Error al verificar el estado del usuario:', error);
+        throw error;
+    }
+}
+
 
 connectToDatabase();
 
@@ -206,5 +310,10 @@ module.exports = {
     insertToken,
     getTokenByUsernameAndToken,
     getEmail,
-    logAction
+    logAction,
+    getFailedVerificationAttempts,
+    insertFailedAttempts,
+    resetFailedVerificationAttempts,
+    blockUserAccount,
+    isUserBlocked
 };
