@@ -38,6 +38,7 @@ app.post('/verifyRecover', homeController.verifyCodeRecover);
 
 app.post('/recoverEnterEmail', homeController.recoverEnterEmail);
 
+app.post('/userVerificationEmail', homeController.verifyUserEmail);
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
@@ -97,6 +98,10 @@ app.get('/recoverEnterEmail', (req, res) => {
 
 app.get('/recoverEnterCode', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'recoverEnterCode.html'));
+});
+
+app.get('/userVerificationEmail', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'userVerificationEmail.html'));
 });
 
 app.get('/logout', (req, res) => {

@@ -59,6 +59,27 @@ async function loginUserDB(username, password) {
     }
 }
 
+async function isUserVerified(username) {
+    try {
+        const pool = await sql.connect(config);
+        const query = `
+            SELECT verification
+            FROM Users
+            WHERE username = '${username}' AND verification = 'verified'
+        `;
+        const result = await pool.request().query(query);
+        // Si la consulta devuelve algún resultado, significa que las credenciales son válidas
+        if (result && result.recordset.length > 0) {
+            return true; // El usuario está verificado
+        } else {
+            return false; // El usuario no está verificado
+        }
+    } catch (error) {
+        console.error('Error al verificar el estado del usuario:', error);
+        throw error;
+    }
+}
+
 async function getUserInfoDB(username) {
     try {
         // Realiza una consulta SQL para obtener la ID y el nombre de usuario del usuario proporcionado
@@ -247,12 +268,28 @@ async function getFailedVerificationAttempts(username) {
     }
 }
 
+async function verifyUserEmail(username) {
+    try {
+        const pool = await sql.connect(config);
+        const query = `
+            UPDATE Users
+            SET verification = 'verified'
+            WHERE username = '${username}'
+        `;
+        const result = await pool.request().query(query);
+        return result.rowsAffected > 0;
+    } catch (error) {
+        console.error('Error al verificar el correo electrónico del usuario:', error);
+        throw error;
+    }
+}
+
 async function resetFailedVerificationAttempts(username) {
     try {
         const pool = await sql.connect(config);
         const query = `
             UPDATE VerificationAttempts
-            SET action = 'Recuperado'
+            SET action = 'Verificado'
             WHERE username = '${username}' AND action = 'Fallida'
         `;
         const result = await pool.request().query(query);
@@ -315,5 +352,7 @@ module.exports = {
     insertFailedAttempts,
     resetFailedVerificationAttempts,
     blockUserAccount,
-    isUserBlocked
+    isUserBlocked,
+    isUserVerified,
+    verifyUserEmail
 };

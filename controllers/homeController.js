@@ -11,9 +11,9 @@ async function registerUser(req, res) {
         // Insertar el usuario en la base de datos
         await db.registerUserDB(username, password, full_name, email, phone, security_question, security_answer);
 
-        await logAction(username, 'Registro', 'Usuario registrado en el sistema');
+        await db.logAction(username, 'Registro', 'Usuario registrado en el sistema');
         // Redirigir a una página de éxito o realizar alguna otra acción después de registrar al usuario
-        res.send('<script>alert("¡Registro exitoso!"); window.location.href = "/login";</script>');
+        res.send('<script>alert("¡Registro exitoso! Por favor al ingresar sesión verifique su correo electrónico."); window.location.href = "/login";</script>');
     } catch (error) {
         console.error('Error al registrar usuario:', error);
         // Manejar el error de alguna manera, como renderizar una página de error o redirigir a otra página
@@ -25,20 +25,23 @@ async function registerUser(req, res) {
 async function loginUser(req, res) {
     try {
         const { username, password } = req.body;
-
         let failedAttempts = await db.getFailedVerificationAttempts(username);
         console.log("failedAttemptsLogin", failedAttempts);
-        // Verificar las credenciales del usuario en la base de datos
-        const isValidUser = await db.loginUserDB(username, password);
+
+        // Verificar si el usuario está verificado
+        const isVerified = await db.isUserVerified(username);
 
         // Verificar si el usuario está bloqueado
         const isBlocked = await db.isUserBlocked(username);
+
+        // Verificar las credenciales del usuario en la base de datos
+        const isValidUser = await db.loginUserDB(username, password);
 
         if (isBlocked) {
             await db.insertFailedAttempts(username);
             await db.logAction(username, 'Inicio de sesion', 'Bloqueado');
             // Si el usuario está bloqueado, mostrar un mensaje de alerta y redirigir a la página de inicio de sesión
-            res.send('<script>alert("¡Tu cuenta ha sido bloqueada! Por favor recupera cuenta."); window.location.href = "/login";</script>');
+            res.send('<script>alert("¡Tu cuenta ha sido bloqueada! Por favor recupera cuenta."); window.location.href = "/recoverEnterEmail";</script>');
             return;
         }
 
@@ -54,13 +57,24 @@ async function loginUser(req, res) {
 
             // Agregar una cookie con el nombre de usuario
             res.cookie('username', username);
-
-            // Enviar el código de verificación por correo electrónico
-            await sendVerificationEmail(username, verificationToken);
-
             await db.logAction(username, 'Inicio de sesion', 'Exitoso');
-            // Redirigir al usuario a la página donde puede ingresar el código de verificación
-            res.redirect('/verify');
+
+            if (!isVerified) {
+                await db.logAction(username, 'Inicio de sesion', 'Verificacion de correo');
+                const subject = '¡Bienvenido a InnovateSoft Solutions! Código de verificación para confirmar tu cuenta'
+                const text = '¡Hola!\n\nGracias por registrarte en InnovateSoft Solutions.\n\n Si no has solicitado este registro, puedes ignorar este correo electrónico.\n\nPara completar tu registro, por favor confirma tu correo electrónico ingresando el siguiente código:';
+
+                await sendVerificationEmail(username, verificationToken, subject, text);
+                // Si el usuario no está verificado, mostrar un mensaje de alerta y redirigir a la página de inicio de sesión
+                res.send('<script>alert("¡Tu cuenta no ha sido verificada! Por favor verifica tu correo electronico."); window.location.href = "/userVerificationEmail";</script>');
+            } else {
+                const subject = '¡Bienvenido a InnovateSoft Solutions! Código de verificación para iniciar sesión'
+                const text = '¡Hola!\n\nGracias por elegir InnovateSoft Solutions para tus necesidades de desarrollo. \n\n Utiliza este código para verificar tu cuenta e iniciar sesión en nuestra plataforma.\n\n¡Esperamos verte pronto y ayudarte a alcanzar tus objetivos!\n\nAtentamente,\nEquipo de InnovateSoft Solutions\n\nTu código de verificación es:';
+                // Enviar el código de verificación por correo electrónico
+                await sendVerificationEmail(username, verificationToken, subject, text);
+                // Redirigir al usuario a la página donde puede ingresar el código de verificación
+                res.redirect('/verify');
+            }
         } else {
             // Incrementar el contador de intentos fallidos solo si las credenciales son inválidas
             failedAttempts += 1;
@@ -148,7 +162,7 @@ function generateVerificationCode(length) {
     return crypto.randomBytes(length).toString('hex').slice(0, length);
 }
 
-async function sendVerificationEmail(username, verificationCode) {
+async function sendVerificationEmail(username, verificationCode, subject, text) {
     try {
         // Obtener el correo electrónico asociado al nombre de usuario
         const email = await db.getEmail(username);
@@ -166,9 +180,10 @@ async function sendVerificationEmail(username, verificationCode) {
         const mailOptions = {
             from: 'emailsproyectopython@gmail.com',
             to: email,
-            subject: '¡Bienvenido a InnovateSoft Solutions! Código de verificación para iniciar sesión',
-            text: `¡Hola!\n\nGracias por elegir InnovateSoft Solutions para tus necesidades de desarrollo. \n\nTu código de verificación es: ${verificationCode}. Utiliza este código para verificar tu cuenta e iniciar sesión en nuestra plataforma.\n\n¡Esperamos verte pronto y ayudarte a alcanzar tus objetivos!\n\nAtentamente,\nEquipo de InnovateSoft Solutions`
+            subject: subject,
+            text: `${text} ${verificationCode}`
         };
+
 
 
         // Enviar el correo electrónico
@@ -218,6 +233,22 @@ async function verifyCode(req, res) {
     }
 }
 
+async function verifyUserEmail(req, res) {
+    const username = req.cookies.username;
+    const verificationEmailCode = req.body.verificationEmailCode;
+
+    // Verificar si el código de verificación es válido
+    const isValidToken = await db.getTokenByUsernameAndToken(username, verificationEmailCode);
+
+    if (isValidToken) {
+        await db.verifyUserEmail(username);
+        await db.logAction(username, 'Verificacion de correo', 'Exitosa');
+        res.send('<script>alert("¡Correo Verificado! ¡Ya puedes iniciar sesión con tus credenciales!"); window.location.href = "/login";</script>');
+    } else {
+        res.send('<script>alert("¡Código de verificación inválido!"); window.location.href = "/userVerifyEmail";</script>');
+
+    }
+}
 async function verifyCodeRecover(req, res) {
 
 }
@@ -225,6 +256,7 @@ async function verifyCodeRecover(req, res) {
 async function recoverEnterEmail(req, res) {
     res.redirect("/recoverEnterCode")
 }
+
 
 // Exportar la función del controlador
 module.exports = {
@@ -238,5 +270,6 @@ module.exports = {
     sendVerificationEmail,
     verifyCode,
     verifyCodeRecover,
-    recoverEnterEmail
+    recoverEnterEmail,
+    verifyUserEmail,
 };
