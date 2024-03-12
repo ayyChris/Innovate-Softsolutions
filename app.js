@@ -40,7 +40,10 @@ app.post('/recoverEnterEmail', homeController.recoverEnterEmail);
 
 app.post('/verifySecurityAnswer', homeController.verifySecurityAnswer);
 
+app.post('/recoverPassword', homeController.recoverPassword);
+
 app.post('/userVerificationEmail', homeController.verifyUserEmail);
+
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));

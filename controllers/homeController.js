@@ -332,6 +332,14 @@ async function verifySecurityAnswer(req, res) {
     }
 }
 
+async function recoverPassword(req, res) {
+    const username = req.cookies.username;
+    const password = req.body.password;
+
+    await db.recoverPasswordDB(username, password);
+    await db.logAction(username, 'Recuperar contraseña', 'Exitoso');
+    res.send('<script>alert("Cuenta recuperada exitosamente! ¡Puedes iniciar sesión!"); window.location.href = "/login";</script>');
+}
 // Exportar la función del controlador
 module.exports = {
     registerUser,
@@ -348,4 +356,5 @@ module.exports = {
     verifyUserEmail,
     getSecurityQuestion,
     verifySecurityAnswer,
+    recoverPassword,
 };

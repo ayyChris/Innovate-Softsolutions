@@ -397,6 +397,35 @@ async function verifySecurityAnswerDB(username, security_answer) {
         throw error; // Puedes manejar el error según sea necesario
     }
 }
+
+async function recoverPasswordDB(username, password) {
+    try {
+        // Actualizar la contraseña del usuario
+        const updatePasswordQuery = `
+            UPDATE Users
+            SET password = '${password}'
+            WHERE username = '${username}'
+        `;
+        await sql.query(updatePasswordQuery);
+
+        // Actualizar el estado de verificación del usuario a "verificado"
+        const updateStatusQuery = `
+            UPDATE Users
+            SET status = 'active'
+            WHERE username = '${username}'
+        `;
+        await sql.query(updateStatusQuery);
+
+        resetFailedVerificationAttempts(username);
+
+        // Si todo se realizó correctamente, retornar true para indicar éxito
+        return true;
+    } catch (error) {
+        console.error('Error al recuperar la contraseña del usuario:', error);
+        throw error;
+    }
+}
+
 connectToDatabase();
 
 // Exporta la función para que esté disponible en otros archivos
@@ -421,4 +450,5 @@ module.exports = {
     getUsernameByEmail,
     getSecurityQuestionDB,
     verifySecurityAnswerDB,
+    recoverPasswordDB
 };
