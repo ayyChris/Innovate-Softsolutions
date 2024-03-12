@@ -333,7 +333,49 @@ async function isUserBlocked(username) {
     }
 }
 
+async function getUsernameByEmail(email) {
+    try {
+        // Realiza una consulta SQL para obtener el correo electrónico del usuario
+        const query = `SELECT username FROM Users WHERE email = '${email}'`;
 
+        // Ejecuta la consulta
+        const result = await sql.query(query);
+
+        // Si la consulta devuelve algún resultado, retorna el correo electrónico
+        if (result && result.recordset.length > 0) {
+            return result.recordset[0].username;
+        } else {
+            return null; // No se encontró ningún usuario con el nombre de usuario proporcionado
+        }
+    } catch (error) {
+        console.error('Error al obtener el correo electrónico del usuario:', error);
+        throw error;
+    }
+}
+
+async function getSecurityQuestionDB(username) {
+    try {
+        const query = `
+            SELECT security_question
+            FROM Users
+            WHERE username = '${username}'
+        `;
+
+        const result = await sql.query(query);
+
+        if (result && result.recordset.length > 0) {
+            const securityQuestionDB = {
+                security_question: result.recordset[0].security_question
+            };
+            return securityQuestionDB;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error('Error al obtener la pregunta de seguridad:', error);
+        throw error;
+    }
+}
 connectToDatabase();
 
 // Exporta la función para que esté disponible en otros archivos
@@ -354,5 +396,7 @@ module.exports = {
     blockUserAccount,
     isUserBlocked,
     isUserVerified,
-    verifyUserEmail
+    verifyUserEmail,
+    getUsernameByEmail,
+    getSecurityQuestionDB,
 };

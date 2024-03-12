@@ -100,9 +100,15 @@ app.get('/recoverEnterCode', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'recoverEnterCode.html'));
 });
 
+app.get('/recoverQuestion', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'recoverQuestion.html'));
+});
+
 app.get('/userVerificationEmail', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'userVerificationEmail.html'));
 });
+
+
 
 app.get('/logout', (req, res) => {
     res.clearCookie('username');
@@ -113,6 +119,7 @@ app.get('/getUserInfo', homeController.getUserInfo);
 
 app.get('/showCard', homeController.showCard);
 
+app.get('/getSecurityQuestion', homeController.getSecurityQuestion);
 
 // Escucha en el puerto 3000
 port = 3000

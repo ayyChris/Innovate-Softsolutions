@@ -1142,3 +1142,13 @@ a:focus {
   font-weight: bold;
   left: 50%;
 }
+
+#highligh-text {
+  color: #00bbf0;
+  font-weight: bold;
+}
+
+#security_question {
+  border: none;
+  padding: 0%;
+}
