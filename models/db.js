@@ -376,6 +376,27 @@ async function getSecurityQuestionDB(username) {
         throw error;
     }
 }
+
+async function verifySecurityAnswerDB(username, security_answer) {
+    try {
+        // Realiza una consulta SQL para buscar un usuario con el nombre de usuario y contraseña proporcionados
+        const query = `SELECT * FROM Users WHERE username = '${username}' AND security_answer = '${security_answer}'`;
+
+        // Ejecuta la consulta
+        const result = await sql.query(query);
+
+        // Si la consulta devuelve algún resultado, significa que las credenciales son válidas
+        if (result && result.recordset.length > 0) {
+            return true; // Las credenciales son válidas
+        } else {
+            return false; // Las credenciales no son válidas
+        }
+        console.log(`Credenciales de ${username} verificadas en la base de datos.`);
+    } catch (error) {
+        console.error('Error al verificar las credenciales del usuario:', error);
+        throw error; // Puedes manejar el error según sea necesario
+    }
+}
 connectToDatabase();
 
 // Exporta la función para que esté disponible en otros archivos
@@ -399,4 +420,5 @@ module.exports = {
     verifyUserEmail,
     getUsernameByEmail,
     getSecurityQuestionDB,
+    verifySecurityAnswerDB,
 };

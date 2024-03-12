@@ -317,6 +317,21 @@ async function getSecurityQuestion(req, res) {
     }
 }
 
+async function verifySecurityAnswer(req, res) {
+    const username = req.cookies.username;
+    const securityAnswer = req.body.securityAnswer;
+
+    const isValidSecurityAnswer = await db.verifySecurityAnswerDB(username, securityAnswer);
+
+    if (isValidSecurityAnswer) {
+        await db.logAction(username, 'Pregunta de seguridad', 'Acertada');
+        res.send('<script>alert("¡Respuesta de seguridad válida! ¡Puedes recuperar tu cuenta!"); window.location.href = "/recoverPassword";</script>');
+    } else {
+        await db.logAction(username, 'Pregunta de seguridad', 'Fallida');
+        res.send('<script>alert("¡Respuesta de seguridad inválida!"); window.location.href = "/recoverQuestion";</script>');
+    }
+}
+
 // Exportar la función del controlador
 module.exports = {
     registerUser,
@@ -332,4 +347,5 @@ module.exports = {
     recoverEnterEmail,
     verifyUserEmail,
     getSecurityQuestion,
+    verifySecurityAnswer,
 };

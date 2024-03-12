@@ -34,9 +34,11 @@ app.post('/buyServices', homeController.buyServices);
 
 app.post('/verify', homeController.verifyCode);
 
-app.post('/verifyRecover', homeController.verifyCodeRecover);
+app.post('/verifyCodeRecover', homeController.verifyCodeRecover);
 
 app.post('/recoverEnterEmail', homeController.recoverEnterEmail);
+
+app.post('/verifySecurityAnswer', homeController.verifySecurityAnswer);
 
 app.post('/userVerificationEmail', homeController.verifyUserEmail);
 
@@ -104,6 +106,9 @@ app.get('/recoverQuestion', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'recoverQuestion.html'));
 });
 
+app.get('/recoverPassword', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'recoverPassword.html'))
+});
 app.get('/userVerificationEmail', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'userVerificationEmail.html'));
 });
