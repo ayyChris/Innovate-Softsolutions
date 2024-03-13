@@ -1,5 +1,6 @@
 const sql = require('mssql');
 const nodemailer = require('nodemailer');
+const bcrypt = require('bcrypt');
 
 // Configuración de la conexión a la base de datos
 const config = {
@@ -25,9 +26,13 @@ async function connectToDatabase() {
 
 // Función para insertar un usuario en la base de datos
 
+// Función para insertar un usuario en la base de datos con contraseña encriptada
 async function registerUserDB(username, password, full_name, email, phone, security_question, security_answer) {
     try {
-        const query = `INSERT INTO Users (username, password, full_name, email, phone, security_question, security_answer) VALUES ('${username}', '${password}', '${full_name}', '${email}', '${phone}', '${security_question}', '${security_answer}')`;
+        // Generar un hash de la contraseña
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 es el número de rondas de hashing
+
+        const query = `INSERT INTO Users (username, password, full_name, email, phone, security_question, security_answer) VALUES ('${username}', '${hashedPassword}', '${full_name}', '${email}', '${phone}', '${security_question}', '${security_answer}')`;
         await sql.query(query);
         console.log(`Usuario ${username} insertado correctamente en la base de datos.`);
     } catch (error) {
@@ -40,19 +45,21 @@ async function registerUserDB(username, password, full_name, email, phone, secur
 // Controlador para manejar la solicitud de inicio de sesión
 async function loginUserDB(username, password) {
     try {
-        // Realiza una consulta SQL para buscar un usuario con el nombre de usuario y contraseña proporcionados
-        const query = `SELECT * FROM Users WHERE username = '${username}' AND password = '${password}' and status = 'active'`;
+        // Realiza una consulta SQL para buscar un usuario con el nombre de usuario proporcionado
+        const query = `SELECT password FROM Users WHERE username = '${username}' AND status = 'active'`;
 
         // Ejecuta la consulta
         const result = await sql.query(query);
 
-        // Si la consulta devuelve algún resultado, significa que las credenciales son válidas
+        // Si la consulta devuelve algún resultado
         if (result && result.recordset.length > 0) {
-            return true; // Las credenciales son válidas
+            // Compara la contraseña encriptada almacenada en la base de datos con la contraseña proporcionada
+            const hashedPasswordFromDB = result.recordset[0].password;
+            const isValidPassword = await bcrypt.compare(password, hashedPasswordFromDB);
+            return isValidPassword; // Devuelve true si las contraseñas coinciden, de lo contrario false
         } else {
-            return false; // Las credenciales no son válidas
+            return false; // No se encontró ningún usuario con el nombre de usuario proporcionado
         }
-        console.log(`Credenciales de ${username} verificadas en la base de datos.`);
     } catch (error) {
         console.error('Error al verificar las credenciales del usuario:', error);
         throw error; // Puedes manejar el error según sea necesario
