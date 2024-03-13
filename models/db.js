@@ -32,7 +32,8 @@ async function registerUserDB(username, password, full_name, email, phone, secur
         // Generar un hash de la contraseña
         const hashedPassword = await bcrypt.hash(password, 10); // 10 es el número de rondas de hashing
 
-        const query = `INSERT INTO Users (username, password, full_name, email, phone, security_question, security_answer) VALUES ('${username}', '${hashedPassword}', '${full_name}', '${email}', '${phone}', '${security_question}', '${security_answer}')`;
+        const hashedSecurityAnswer = await bcrypt.hash(security_answer, 10);
+        const query = `INSERT INTO Users (username, password, full_name, email, phone, security_question, security_answer) VALUES ('${username}', '${hashedPassword}', '${full_name}', '${email}', '${phone}', '${security_question}', '${hashedSecurityAnswer}')`;
         await sql.query(query);
         console.log(`Usuario ${username} insertado correctamente en la base de datos.`);
     } catch (error) {
@@ -115,14 +116,16 @@ async function getUserInfoDB(username) {
     }
 }
 
-async function buyServicesDB(service, username) {
+async function buyServicesDB(service, username, price) {
     try {
         // Realiza una consulta SQL para insertar el servicio en la tabla Services
         const query = `
-            INSERT INTO Services (service, username) VALUES ('${service}', '${username}')`;
+            INSERT INTO Services (service, username, price) VALUES ('${service}', '${username}', '${price}')`;
 
         // Ejecuta la consulta
         await sql.query(query);
+
+        //updateServicePrices();
 
         // Retorna un mensaje de éxito
         console.log(`Servicio ${service} comprado por ${username} e insertado en la base de datos.`);
@@ -135,7 +138,7 @@ async function buyServicesDB(service, username) {
 async function showCardDB(username) {
     try {
         // Realiza una consulta SQL para obtener la ID y el nombre de usuario del usuario proporcionado
-        const query = `SELECT id, service FROM Services WHERE username = '${username}'`;
+        const query = `SELECT id, service FROM Services WHERE username = '${username}' and purchase_status = 'pending'`;
 
         // Ejecuta la consulta
         const result = await sql.query(query);
@@ -147,6 +150,31 @@ async function showCardDB(username) {
                 service: record.service
             }));
             return cardInfoArray;
+        } else {
+            return []; // Devuelve un array vacío si no se encontraron registros
+        }
+        console.log(`Información del carrito de ${username} obtenida de la base de datos.`);
+    } catch (error) {
+        console.error('Error al obtener la información del usuario:', error);
+        throw error;
+    }
+}
+
+async function showServicesDB(username) {
+    try {
+        // Realiza una consulta SQL para obtener la ID y el nombre de usuario del usuario proporcionado
+        const query = `SELECT id, service FROM Services WHERE username = '${username}' and purchase_status = 'purchased'`;
+
+        // Ejecuta la consulta
+        const result = await sql.query(query);
+
+        // Si la consulta devuelve algún resultado, construye un array de objetos cardInfo
+        if (result && result.recordset.length > 0) {
+            const servicesInfoArray = result.recordset.map(record => ({
+                id: record.id,
+                service: record.service
+            }));
+            return servicesInfoArray;
         } else {
             return []; // Devuelve un array vacío si no se encontraron registros
         }
@@ -384,33 +412,66 @@ async function getSecurityQuestionDB(username) {
     }
 }
 
-async function verifySecurityAnswerDB(username, security_answer) {
+async function getTotalPriceByUsernameDB(username) {
     try {
-        // Realiza una consulta SQL para buscar un usuario con el nombre de usuario y contraseña proporcionados
-        const query = `SELECT * FROM Users WHERE username = '${username}' AND security_answer = '${security_answer}'`;
+        const query = `
+            SELECT SUM(price) AS total_price
+            FROM Services
+            WHERE username = '${username}' and purchase_status = 'pending'
+        `;
+
+        const result = await sql.query(query);
+
+        if (result && result.recordset.length > 0) {
+            const totalPrice = {
+                total_price: result.recordset[0].total_price || 0
+            }; // Obtener la suma de precios o cero si no hay resultados
+            return totalPrice;
+        } else {
+            return { total_price: 0 }; // Si no hay servicios para el usuario, retornar cero
+        }
+    } catch (error) {
+        console.error('Error al obtener el total de precios:', error);
+        throw error;
+    }
+}
+
+
+
+
+async function verifySecurityAnswerDB(username, securityAnswer) {
+    try {
+        // Realiza una consulta SQL para buscar un usuario con el nombre de usuario proporcionado
+        const query = `SELECT security_answer FROM Users WHERE username = '${username}'`;
 
         // Ejecuta la consulta
         const result = await sql.query(query);
 
-        // Si la consulta devuelve algún resultado, significa que las credenciales son válidas
+        // Si la consulta devuelve algún resultado
         if (result && result.recordset.length > 0) {
-            return true; // Las credenciales son válidas
+            // Compara la respuesta de seguridad almacenada en la base de datos con la proporcionada por el usuario
+            const hashedSecurityAnswerFromDB = result.recordset[0].security_answer;
+            const isValidSecurityAnswer = await bcrypt.compare(securityAnswer, hashedSecurityAnswerFromDB);
+            return isValidSecurityAnswer; // Devuelve true si las respuestas coinciden, de lo contrario false
         } else {
-            return false; // Las credenciales no son válidas
+            return false; // No se encontró ningún usuario con el nombre de usuario proporcionado
         }
-        console.log(`Credenciales de ${username} verificadas en la base de datos.`);
     } catch (error) {
-        console.error('Error al verificar las credenciales del usuario:', error);
+        console.error('Error al verificar la respuesta de seguridad del usuario:', error);
         throw error; // Puedes manejar el error según sea necesario
     }
 }
 
+
 async function recoverPasswordDB(username, password) {
     try {
-        // Actualizar la contraseña del usuario
+        // Encriptar la nueva contraseña
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 es el número de rondas de hashing
+
+        // Actualizar la contraseña en la base de datos
         const updatePasswordQuery = `
             UPDATE Users
-            SET password = '${password}'
+            SET password = '${hashedPassword}'
             WHERE username = '${username}'
         `;
         await sql.query(updatePasswordQuery);
@@ -429,6 +490,48 @@ async function recoverPasswordDB(username, password) {
         return true;
     } catch (error) {
         console.error('Error al recuperar la contraseña del usuario:', error);
+        throw error;
+    }
+}
+
+async function buyCardDB(serviceIdsArray) {
+    try {
+        // Convertir los IDs de servicio a una cadena separada por comas para usar en la consulta SQL
+        const serviceIdsString = serviceIdsArray.join(',');
+
+        console.log('serviceIdsString:', serviceIdsString);
+
+        // Query para actualizar el estado de compra en la tabla Services
+        const query = `
+            UPDATE Services
+            SET purchase_status = 'purchased'
+            WHERE id IN (${serviceIdsString})
+        `;
+
+        // Ejecutar la consulta SQL
+        await sql.query(query);
+
+        // Devolver un mensaje de éxito
+        return { message: 'Estado de compra actualizado con éxito' };
+    } catch (error) {
+        console.error('Error al actualizar el estado de compra en la base de datos:', error);
+        throw error;
+    }
+}
+
+async function insertPurchaseDB(serviceId, username, paymentMethod, paymentMethodData) {
+    try {
+        // Encriptar los datos del método de pago utilizando bcrypt
+        const hashedPaymentMethodData = await bcrypt.hash(paymentMethodData, 10); // 10 es el número de rondas de hashing
+
+        const query = `
+            INSERT INTO purchases (service_id, username, payment_method, payment_method_data)
+            VALUES (${serviceId}, '${username}', '${paymentMethod}', '${hashedPaymentMethodData}');
+        `;
+        await sql.query(query);
+        console.log('Compra registrada en la base de datos.');
+    } catch (error) {
+        console.error('Error al insertar la compra en la base de datos:', error);
         throw error;
     }
 }
@@ -457,5 +560,9 @@ module.exports = {
     getUsernameByEmail,
     getSecurityQuestionDB,
     verifySecurityAnswerDB,
-    recoverPasswordDB
+    recoverPasswordDB,
+    getTotalPriceByUsernameDB,
+    buyCardDB,
+    insertPurchaseDB,
+    showServicesDB
 };

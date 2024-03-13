@@ -111,7 +111,7 @@
             <div class="btn-box">
                 <form id="card" method="POST" action="/buyCard">
                     <input type="hidden" id="serviceIds" name="serviceIds" value="">
-                    <button type="submit" class="custom-btn btn btn-primary" name="buyServices">Comprar ahora</button>
+                    <button type="submit" class="custom-btn btn btn-primary" name="buyServices">Comprar ahora <span id="totalPrice"></span>$</button>
                 </form>
             </div>
         </div>
@@ -251,7 +251,7 @@
     <!-- Script JavaScript para hacer una solicitud AJAX -->
     <!-- Tu HTML -->
     <script src="js/main.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
 </html>

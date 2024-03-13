@@ -1152,3 +1152,21 @@ a:focus {
   border: none;
   padding: 0%;
 }
+
+#serviceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+#serviceGrid>div {
+  background-color: #f8f8f9;
+  color: #0c0c0c;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+#serviceGrid>div p {
+  margin: 0;
+  line-height: 1.5;
+}

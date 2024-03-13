@@ -1,3 +1,4 @@
+const { Console } = require('console');
 const db = require('../models/db.js'); // Ruta relativa al archivo db.js
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
@@ -128,12 +129,13 @@ async function getUserInfo(req, res) {
 async function buyServices(req, res) {
     try {
         const service = req.body.service;
-
+        const price = req.body.price;
         const username = req.cookies.username;
 
         // Comprar el servicio
-        await db.buyServicesDB(service, username);
+        await db.buyServicesDB(service, username, price);
 
+        await db.logAction(username, `Añadio a carrito ${service}`, 'Exitosamente');
         res.send('<script>alert("¡Se ha añadido el servicio al carrito exitosamente!"); window.location.href = "/buyServices";</script>');
 
     } catch (error) {
@@ -160,7 +162,21 @@ async function showCard(req, res) {
         res.status(500).json({ error: 'Se produjo un error al procesar la solicitud' });
     }
 }
-
+async function showServices(req, res) {
+    try {
+        const username = req.cookies.username;
+        const servicesInfoArray = await db.showServicesDB(username);
+        if (servicesInfoArray && servicesInfoArray.length > 0) {
+            res.status(200).json(servicesInfoArray);
+            console.log("showServices", servicesInfoArray);
+        } else {
+            res.status(404).json({ error: 'Informacion de carrito no encontrada' });
+        }
+    } catch (error) {
+        console.error('Error al obtener la información del carrito:', error);
+        res.status(500).json({ error: 'Se produjo un error al procesar la solicitud' });
+    }
+}
 // Función para generar un código de verificación aleatorio
 function generateVerificationCode(length) {
     return crypto.randomBytes(length).toString('hex').slice(0, length);
@@ -183,7 +199,7 @@ async function sendVerificationEmail(username, verificationCode, subject, emailT
         // Configurar el contenido del correo electrónico
         const mailOptions = {
             from: 'emailsproyectopython@gmail.com',
-            to: 'chrisbf11@gmail.com', // Correo electrónico del destinatario
+            to: email, // Correo electrónico del destinatario
             subject: subject,
             text: `${emailText} ${verificationCode}`
         };
@@ -317,6 +333,24 @@ async function getSecurityQuestion(req, res) {
     }
 }
 
+async function getTotalPriceByUsername(req, res) {
+    try {
+        const username = req.cookies.username;
+        const totalPrice = await db.getTotalPriceByUsernameDB(username);
+        console.log("getTotalPriceByUsernameDB", totalPrice);
+        if (totalPrice) {
+            res.status(200).json({
+                total_price: totalPrice.total_price,
+            });
+        } else {
+            res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+    } catch (error) {
+        console.error('Error al obtener la información del usuario:', error);
+        res.status(500).json({ error: 'Se produjo un error al procesar la solicitud' });
+    }
+}
+
 async function verifySecurityAnswer(req, res) {
     const username = req.cookies.username;
     const securityAnswer = req.body.securityAnswer;
@@ -340,6 +374,39 @@ async function recoverPassword(req, res) {
     await db.logAction(username, 'Recuperar contraseña', 'Exitoso');
     res.send('<script>alert("Cuenta recuperada exitosamente! ¡Puedes iniciar sesión!"); window.location.href = "/login";</script>');
 }
+
+async function buyCard(req, res) {
+    try {
+        const username = req.cookies.username;
+
+        // Obtener los IDs de servicio y los datos de pago del cuerpo de la solicitud
+        const { serviceIds, paymentData } = req.body;
+
+        // Convertir los IDs de servicio a un array
+        const serviceIdsArray = serviceIds.split(',');
+
+        // Actualizar el estado de compra en la base de datos
+        await db.buyCardDB(serviceIdsArray);
+
+        // Parsear los datos de pago
+        const paymentInfo = JSON.parse(paymentData);
+        const { method, details } = paymentInfo;
+
+        // Realizar la compra
+        for (const serviceId of serviceIdsArray) {
+            await db.insertPurchaseDB(serviceId, username, method, JSON.stringify(details));
+        }
+
+        await db.logAction(username, `Compra de ${serviceIdsArray}`, 'Exitosa');
+        // Enviar una respuesta al cliente
+        res.send('<script>alert("Servicios comprados correctamente, por favor ingresa a Mis servicios para darle seguimiento"); window.location.href = "/myServices";</script>');
+    } catch (error) {
+        console.error('Error al procesar la compra:', error);
+        res.status(500).json({ error: 'Se produjo un error al procesar la compra' });
+    }
+}
+
+
 // Exportar la función del controlador
 module.exports = {
     registerUser,
@@ -357,4 +424,7 @@ module.exports = {
     getSecurityQuestion,
     verifySecurityAnswer,
     recoverPassword,
+    buyCard,
+    getTotalPriceByUsername,
+    showServices
 };

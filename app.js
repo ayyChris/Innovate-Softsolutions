@@ -30,7 +30,7 @@ app.post('/login', homeController.loginUser);
 
 app.post('/buyServices', homeController.buyServices);
 
-//app.post('/myServices', homeController.myServices);
+
 
 app.post('/verify', homeController.verifyCode);
 
@@ -44,6 +44,7 @@ app.post('/recoverPassword', homeController.recoverPassword);
 
 app.post('/userVerificationEmail', homeController.verifyUserEmail);
 
+app.post('/buyCard', homeController.buyCard);
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
@@ -127,8 +128,11 @@ app.get('/getUserInfo', homeController.getUserInfo);
 
 app.get('/showCard', homeController.showCard);
 
+app.get('/showServices', homeController.showServices);
+
 app.get('/getSecurityQuestion', homeController.getSecurityQuestion);
 
+app.get('/getTotalPrice', homeController.getTotalPriceByUsername);
 // Escucha en el puerto 3000
 port = 3000
 app.listen(port, () => {
