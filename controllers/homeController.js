@@ -2,6 +2,7 @@ const { Console } = require('console');
 const db = require('../models/db.js'); // Ruta relativa al archivo db.js
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { send } = require('process');
 
 // Controlador para manejar la solicitud de registro de un nuevo usuario
 async function registerUser(req, res) {
@@ -227,6 +228,7 @@ async function verifyCode(req, res) {
         const isValidToken = await db.getTokenByUsernameAndToken(username, verificationCode);
 
         if (isValidToken) {
+            await sendVerificationEmail(username, '', '¡Inicio de sesión exitoso!', '¡Hola!\n\n¡Has iniciado sesión exitosamente en InnovateSoft Solutions!\n\n¡Esperamos verte pronto y ayudarte a alcanzar tus objetivos!\n\nAtentamente,\nEquipo de InnovateSoft Solutions');
             // Restablecer el contador de intentos fallidos si la verificación es exitosa
             await db.resetFailedVerificationAttempts(username);
             await db.logAction(username, 'Verificacion', 'Exitosa');
@@ -371,7 +373,8 @@ async function recoverPassword(req, res) {
     const password = req.body.password;
 
     await db.recoverPasswordDB(username, password);
-    await db.logAction(username, 'Recuperar contraseña', 'Exitoso');
+    await sendVerificationEmail(username, '', '¡Tu contraseña ha sido recuperada exitosamente!', '¡Hola!\n\nTu contraseña ha sido recuperada exitosamente.\n\nSi no has solicitado esta recuperación, por favor contacta a soporte.\n\n¡Esperamos verte pronto y ayudarte a alcanzar tus objetivos!\n\nAtentamente,\nEquipo de InnovateSoft Solutions');
+    await db.logAction(username, 'Cambio contraseña', 'Exitoso');
     res.send('<script>alert("Cuenta recuperada exitosamente! ¡Puedes iniciar sesión!"); window.location.href = "/login";</script>');
 }
 
