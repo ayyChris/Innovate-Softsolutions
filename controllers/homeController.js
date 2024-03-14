@@ -242,7 +242,7 @@ async function verifyCode(req, res) {
                 // Bloquear la cuenta si se han excedido los intentos fallidos
                 await db.blockUserAccount(username);
                 await db.logAction(username, 'Bloqueo', 'Exitoso');
-                res.send('<script>alert("¡Cuenta bloqueada! Ha excedido el límite de intentos de verificación fallidos."); window.location.href = "/login";</script>');
+                res.send('<script>alert("¡Cuenta bloqueada! Ha excedido el límite de intentos de verificación fallidos."); window.location.href = "/recoverEnterEmail";</script>');
             } else {
                 res.send('<script>alert("¡Código de verificación inválido!"); window.location.href = "/verify";</script>');
             }
