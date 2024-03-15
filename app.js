@@ -30,8 +30,6 @@ app.post('/login', homeController.loginUser);
 
 app.post('/buyServices', homeController.buyServices);
 
-
-
 app.post('/verify', homeController.verifyCode);
 
 app.post('/verifyCodeRecover', homeController.verifyCodeRecover);
