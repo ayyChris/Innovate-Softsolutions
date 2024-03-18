@@ -115,8 +115,6 @@ app.get('/userVerificationEmail', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'userVerificationEmail.html'));
 });
 
-
-
 app.get('/logout', (req, res) => {
     res.clearCookie('username');
     res.redirect('/');

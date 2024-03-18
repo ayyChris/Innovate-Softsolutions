@@ -1,0 +1,238 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<title>Ubicaciones de Costa Rica, Lista de provincias, cantones y distritos </title>
+<meta name="description"
+    content="Ubicaciones de Costa Rica. Lista de provincias, cantones y distritos y su ubicacion en un mapa, ademas de servicio para obtenerlo en formato JSON" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js" type="text/javascript"></script>
+<script>
+    //            console.log('pages/new.html?lat='+ lat +'&lon='+lon');
+    $(document).ready(function () {
+        getData(
+            "https://ubicaciones.paginasweb.cr/provincias.json",
+            function (data) {
+                arrayToOptions(data, $("#provincias"), 'Provincias');
+            }
+        );
+    });
+    var map;
+    var geocoder;
+    var crLat = 9.6301892;
+    var crLng = -84.2541843;
+    function initMap() {
+        geocoder = new google.maps.Geocoder();
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: crLat, lng: crLng },
+            zoom: 7,
+            mapTypeId: google.maps.MapTypeId.HYBRID
+        });
+        marker = new google.maps.Marker({
+            map: map,
+            draggable: true,
+            animation: google.maps.Animation.DROP,
+            position: { lat: crLat, lng: crLng }
+        });
+        google.maps.event.addListener(marker, 'dragend', function () {
+            onMakerMove(marker);
+        });
+    }
+    function codeAddress(address) {
+        geocoder.geocode({ 'address': address }, function (results, status) {
+
+            if (status == google.maps.GeocoderStatus.OK) {
+                map.setCenter(results[0].geometry.location);
+                marker.setPosition(results[0].geometry.location);
+                onMakerMove(marker);
+            } else {
+                console.debug('No pudimos obtener la dirección porque: ' + status);
+            }
+        });
+    }
+    function onMakerMove(marker) {
+        $("#coordenadas").val(marker.getPosition().toString().replace('(', '').replace(')', ''));
+    }
+    function getCantones(idProvincia) {
+        map.setZoom(9);
+        codeAddress("Costa Rica, " + $('#provincias option:selected').text());
+        getData(
+            "https://ubicaciones.paginasweb.cr/provincia/" + idProvincia + "/cantones.json",
+            function (data) {
+                arrayToOptions(data, $("#cantones"), 'Cantones');
+                $(".canton").show();
+                $(".distrito").hide();
+                $(".send").hide();
+            }
+        );
+    }
+    function getDistritos(idCanton) {
+        var query = "Costa Rica, " + $('#provincias option:selected').text() + ', ' + $('#cantones option:selected').text();
+        console.log(query);
+        map.setZoom(12);
+        codeAddress(query);
+        var idProvincia = $("#provincias").val();
+        getData(
+            "https://ubicaciones.paginasweb.cr/provincia/" + idProvincia + "/canton/" + idCanton + "/distritos.json",
+            function (data) {
+                arrayToOptions(data, $("#distritos"), 'Distritos');
+                $(".distrito").show();
+                $(".send").hide();
+            }
+        );
+    }
+    function distritoSelected() {
+        var query = "Costa Rica, " + jQuery('#provincias option:selected').text() + "," + jQuery('#cantones option:selected').text() + "," + jQuery('#distritos option:selected').text();
+        map.setZoom(15);
+        codeAddress(query);
+        calcPostal();
+        $('.send').show()
+    }
+    function arrayToOptions(array, $select, title) {
+        $('.list-title span').html(title);
+        $select.html($('<option>').html('Seleccione una opción'));
+        var $tableBody = $('.list tbody').html('');
+        for (key in array) {
+            $select.append($('<option>').html(array[key]).val(key));
+            $tableBody.append($('<tr>').html($('<td>').html(key)).append($('<td>').html(array[key])));
+        }
+        calcPostal();
+    }
+    function calcPostal() {
+        var format = function (value, length) {
+            if (value && value.length === length) {
+                return value;
+            } else if (value && value.length === 1) {
+                return '0' + value;
+            } else {
+                return length == 1 && '0' || '00';
+            }
+        }
+        $('#postal').val(
+            format($("#provincias").val(), 1) +
+            format($("#cantones").val(), 2) +
+            format($("#distritos").val(), 2)
+
+        );
+
+    }
+    function getData(url, callback) {
+        $.ajax({
+            dataType: "json",
+            url: url,
+            success: function (data) {
+                callback(data);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+</script>
+<style>
+    .form-val select {
+        font-size: 1rem;
+        min-width: 120px;
+    }
+
+    .map-container {
+        width: 100%;
+        margin: 1em;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .canton,
+    .distrito {
+        display: none;
+    }
+
+    #map {
+        min-width: 200px;
+        width: 100%;
+        height: 400px;
+    }
+
+    input#coordenadas {
+        margin: 1px;
+        font-size: 1rem;
+    }
+
+    .jumbotron.jumbotron-fluid {
+        margin-bottom: 20px;
+        padding: 20px;
+    }
+
+    .footer {
+        background-color: #f8f9fa;
+        color: #7c7c7d;
+        padding: 10px;
+    }
+
+    .footer a {
+        color: #181819;
+    }
+</style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h2>
+                    Seleccione una ubicación
+                </h2>
+                <div>
+                    <div class="form-group">
+                        <label for="provincias">Provincia</label>
+                        <select class="form-control" class="form-control" id="provincias" name="provincia"
+                            onchange="getCantones(this.value);">
+                        </select>
+                    </div>
+                    <div class="form-group canton">
+                        <label for="cantones">Cantón</label>
+                        <select class="form-control" id="cantones" name="canton" onchange="getDistritos(this.value);">
+                        </select>
+                    </div>
+                    <div class="form-group distrito">
+                        <label for="distritos">Distrito</label>
+                        <select class="form-control" id="distritos" name="distrito"
+                            onchange="distritoSelected();"></select>
+                    </div>
+                    <br />
+                    <hr />
+                    <h4 class="list-title">
+                        Lista de
+                        <span>
+                            Provincias
+                        </span>
+                    </h4>
+                    <table class="list table table-hover table-striped table-sm ">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Nombre</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col">
+                <div class="map-container">
+                    <div id="map"></div>
+                    <br />
+                    <div class="form-group">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD3cOQNB4cQjQDSGWiB_nT2H2pEOuD3w60&callback=initMap"
+            async defer></script>
+    </div>
+
+
+
+
+</body>
+
+</html>

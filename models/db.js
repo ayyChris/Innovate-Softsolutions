@@ -536,6 +536,28 @@ async function insertPurchaseDB(serviceId, username, paymentMethod, paymentMetho
     }
 }
 
+async function getLocationData() {
+    try {
+        // Aquí realizarías la consulta a la base de datos para obtener los datos de la tabla Location
+        const locationData = await Location.findAll(); // Ejemplo de uso de Sequelize, reemplaza con tu ORM o consulta directa a la base de datos
+
+        // Convertir los datos a formato JSON
+        const jsonData = locationData.map(location => {
+            return {
+                id_location: location.id_location,
+                province: location.province,
+                canton: location.canton,
+                district: location.district
+            };
+        });
+
+        return jsonData;
+    } catch (error) {
+        console.error('Error al obtener datos de ubicación:', error);
+        throw error;
+    }
+}
+
 connectToDatabase();
 
 // Exporta la función para que esté disponible en otros archivos
