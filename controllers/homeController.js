@@ -43,6 +43,7 @@ async function loginUser(req, res) {
         // Verificar las credenciales del usuario en la base de datos
         const isValidUser = await db.loginUserDB(username, password);
 
+        // Verificar si el usuario está bloqueado
         if (isBlocked) {
             await db.insertFailedAttempts(username);
             await db.logAction(username, 'Inicio de sesion', 'Bloqueado');
@@ -50,7 +51,6 @@ async function loginUser(req, res) {
             res.send('<script>alert("¡Tu cuenta ha sido bloqueada! Por favor recupera cuenta."); window.location.href = "/recoverEnterEmail";</script>');
             return;
         }
-
         if (isValidUser) {
             // Restablecer el contador de intentos fallidos si las credenciales son válidas
             await db.resetFailedVerificationAttempts(username);

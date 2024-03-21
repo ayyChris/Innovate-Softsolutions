@@ -124,6 +124,7 @@ function distritoSelected() {
     calcPostal();
     $('.send').show()
 }
+
 function arrayToOptions(array, $select, title) {
     $('.list-title span').html(title);
     $select.html($('<option>').html('Seleccione una opción'));
