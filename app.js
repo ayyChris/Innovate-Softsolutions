@@ -115,6 +115,10 @@ app.get('/userVerificationEmail', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'userVerificationEmail.html'));
 });
 
+app.get('/exchangeRate', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'exchangeRate.html'));
+});
+
 app.get('/logout', (req, res) => {
     res.clearCookie('username');
     res.redirect('/');
@@ -129,6 +133,8 @@ app.get('/showServices', homeController.showServices);
 app.get('/getSecurityQuestion', homeController.getSecurityQuestion);
 
 app.get('/getTotalPrice', homeController.getTotalPriceByUsername);
+
+app.get('/getExchangeRate', homeController.obtenerValorCompra);
 // Escucha en el puerto 3000
 port = 3000
 app.listen(port, () => {
