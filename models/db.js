@@ -31,8 +31,8 @@ async function registerUserDB(username, password, full_name, email, phone, secur
     try {
         // Generar un hash de la contraseña
         const hashedPassword = await bcrypt.hash(password, 10); // 10 es el número de rondas de hashing
-
         const hashedSecurityAnswer = await bcrypt.hash(security_answer, 10);
+
         const query = `INSERT INTO Users (username, password, full_name, email, phone, security_question, security_answer) VALUES ('${username}', '${hashedPassword}', '${full_name}', '${email}', '${phone}', '${security_question}', '${hashedSecurityAnswer}')`;
         await sql.query(query);
         console.log(`Usuario ${username} insertado correctamente en la base de datos.`);

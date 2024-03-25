@@ -134,7 +134,7 @@ app.get('/getSecurityQuestion', homeController.getSecurityQuestion);
 
 app.get('/getTotalPrice', homeController.getTotalPriceByUsername);
 
-app.get('/getExchangeRate', homeController.obtenerValorCompra);
+// app.get('/getExchangeRate', homeController.obtenerValorCompra);
 // Escucha en el puerto 3000
 port = 3000
 app.listen(port, () => {

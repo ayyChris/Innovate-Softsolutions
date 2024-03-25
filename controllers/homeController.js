@@ -3,137 +3,45 @@ const db = require('../models/db.js'); // Ruta relativa al archivo db.js
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const { send } = require('process');
+const bcrypt = require('bcrypt');
 const axios = require('axios');
-const xml2js = require('xml2js');
 
-// Obtener la fecha actual en el formato dd/mm/yyyy
-const today = new Date();
-const day = String(today.getDate()).padStart(2, '0');
-const month = String(today.getMonth() + 1).padStart(2, '0');
-const year = today.getFullYear();
-const fechaActual = `${day}/${month}/${year}`;
-
-const nombre = 'Christian';
-const subNiveles = 'N';
-const correoElectronico = 'chrisbf11@gmail.com';
-const token = 'C3OC228T6A';
-
-// Función para obtener el valor de compra del dólar del Banco Central de Costa Rica
-async function obtenerValorCompra(res) {
-    try {
-        // Parámetros para la solicitud al servicio web del Banco Central de Costa Rica
-        const indicador = 318;
-
-        // Realizar la solicitud al servicio web del Banco Central de Costa Rica
-        const response = await axios.get('https://gee.bccr.fi.cr/Indicadores/Suscripciones/WS/wsindicadoreseconomicos.asmx/ObtenerIndicadoresEconomicosXML', {
-            params: {
-                indicador: indicador,
-                fechaInicio: fechaActual,
-                fechaFinal: fechaActual,
-                nombre: nombre,
-                subNiveles: subNiveles,
-                correoElectronico: correoElectronico,
-                token: token
-            }
-        });
-
-        // Parsear la respuesta XML
-        const xmlData = await xml2js.parseStringPromise(response.data);
-
-        // Extraer el valor de compra del dólar
-        let valorCompraDolar;
-        if (xmlData && xmlData.string && xmlData.string._) {
-            const datos = xmlData.string._;
-            const parser = new xml2js.Parser({ explicitArray: false });
-            parser.parseString(datos, (err, result) => {
-                if (err) {
-                    console.error('Error al parsear la respuesta XML:', err);
-                    res.status(500).json({ error: 'Error al parsear la respuesta XML' });
-                    return;
-                }
-                valorCompraDolar = parseFloat(result.Datos_de_INGC011_CAT_INDICADORECONOMIC.INGC011_CAT_INDICADORECONOMIC.NUM_VALOR);
-
-                // Devolver el valor de compra del dólar como JSON
-                res.status(200).json({ valorCompraDolar: valorCompraDolar });
-            });
-        } else {
-            console.error('Estructura de respuesta XML inesperada:', xmlData);
-            res.status(500).json({ error: 'Estructura de respuesta XML inesperada' });
-            return;
-        }
-    } catch (error) {
-        console.error('Error al obtener el valor de compra del dólar:', error);
-        res.status(500).json({ error: 'Error al obtener el valor de compra del dólar' });
-    }
-}
-
-// Función para obtener el valor de venta del dólar del Banco Central de Costa Rica
-async function obtenerValorVenta(res) {
-    try {
-        // Parámetros para la solicitud al servicio web del Banco Central de Costa Rica
-        const indicador = 317;
-
-        // Realizar la solicitud al servicio web del Banco Central de Costa Rica
-        const response = await axios.get('https://gee.bccr.fi.cr/Indicadores/Suscripciones/WS/wsindicadoreseconomicos.asmx/ObtenerIndicadoresEconomicosXML', {
-            params: {
-                indicador: indicador,
-                fechaInicio: fechaActual,
-                fechaFinal: fechaActual,
-                nombre: nombre,
-                subNiveles: subNiveles,
-                correoElectronico: correoElectronico,
-                token: token
-            }
-        });
-
-        // Parsear la respuesta XML
-        const xmlData = await xml2js.parseStringPromise(response.data);
-
-        // Extraer el valor de venta del dólar
-        let valorVentaDolar;
-        if (xmlData && xmlData.string && xmlData.string._) {
-            const datos = xmlData.string._;
-            const parser = new xml2js.Parser({ explicitArray: false });
-            parser.parseString(datos, (err, result) => {
-                if (err) {
-                    console.error('Error al parsear la respuesta XML:', err);
-                    res.status(500).json({ error: 'Error al parsear la respuesta XML' });
-                    return;
-                }
-                valorVentaDolar = parseFloat(result.Datos_de_INGC011_CAT_INDICADORECONOMIC.INGC011_CAT_INDICADORECONOMIC.NUM_VALOR);
-
-                // Devolver el valor de venta del dólar como JSON
-                res.status(200).json({ valorVentaDolar: valorVentaDolar });
-            });
-        } else {
-            console.error('Estructura de respuesta XML inesperada:', xmlData);
-            res.status(500).json({ error: 'Estructura de respuesta XML inesperada' });
-            return;
-        }
-    } catch (error) {
-        console.error('Error al obtener el valor de venta del dólar:', error);
-        res.status(500).json({ error: 'Error al obtener el valor de venta del dólar' });
-    }
-}
-
-// Controlador para manejar la solicitud de registro de un nuevo usuario
 async function registerUser(req, res) {
     try {
+        console.log(req.body);
         // Obtener los datos del formulario de registro
         const { username, password, full_name, email, phone, security_question, security_answer } = req.body;
 
-        // Insertar el usuario en la base de datos
-        await db.registerUserDB(username, password, full_name, email, phone, security_question, security_answer);
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 es el número de rondas de hashing
+        const hashedSecurityAnswer = await bcrypt.hash(security_answer, 10);
 
-        await db.logAction(username, 'Registro', 'Usuario registrado en el sistema');
-        // Redirigir a una página de éxito o realizar alguna otra acción después de registrar al usuario
-        res.send('<script>alert("¡Registro exitoso! Por favor al ingresar sesión verifique su correo electrónico."); window.location.href = "/login";</script>');
+        // Hacer una solicitud POST al servidor Flask para registrar al usuario
+        const response = await axios.post('http://localhost:5000/register', {
+            username,
+            password: hashedPassword,
+            full_name,
+            email,
+            phone,
+            security_question,
+            security_answer: hashedSecurityAnswer
+        });
+
+        // Verificar la respuesta del servidor Flask
+        if (response.status === 200) {
+            // Si la respuesta es exitosa, redirigir a una página de éxito
+            res.send('<script>alert("¡Registro exitoso! Por favor al ingresar sesión verifique su correo electrónico."); window.location.href = "/login";</script>');
+        } else {
+            // Si hay un error en la respuesta del servidor, manejarlo adecuadamente
+            console.error('Error en el registro de usuario:', response.data);
+            res.status(response.status).send(response.data);
+        }
     } catch (error) {
         console.error('Error al registrar usuario:', error);
         // Manejar el error de alguna manera, como renderizar una página de error o redirigir a otra página
         res.status(500).send('Error al registrar usuario');
     }
 }
+
 
 async function loginUser(req, res) {
     try {
@@ -540,5 +448,4 @@ module.exports = {
     buyCard,
     getTotalPriceByUsername,
     showServices,
-    obtenerValorCompra,
 };
