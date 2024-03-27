@@ -52,7 +52,7 @@ async function obtenerValorCompra() {
             console.error('Estructura de respuesta XML inesperada:', xmlData);
             return;
         }
-
+        res.status(200).json({ valorCompraDolar });
         // Mostrar el valor de compra del dólar en la consola
         console.log(`Valor de compra del dólar: ${valorCompraDolar} colones`);
     } catch (error) {

@@ -1,49 +1,27 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 const homeController = require('./controllers/homeController');
 
-const cookieParser = require('cookie-parser');
 const app = express();
 
-/// Configurar middleware para servir archivos estáticos desde la carpeta 'public'
+// Configuración del middleware
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Configurar middleware para el manejo de datos JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Configurar middleware para el manejo de cookies
 app.use(cookieParser());
 
 const secretKey = 'mi-clave-secreta-ultrasegura-y-aleatoria';
 
+// Configuración de la sesión
 app.use(session({
     secret: secretKey,
     resave: false,
     saveUninitialized: true
 }));
 
-app.post('/register', homeController.registerUser);
-
-app.post('/login', homeController.loginUser);
-
-app.post('/buyServices', homeController.buyServices);
-
-app.post('/verify', homeController.verifyCode);
-
-app.post('/verifyCodeRecover', homeController.verifyCodeRecover);
-
-app.post('/recoverEnterEmail', homeController.recoverEnterEmail);
-
-app.post('/verifySecurityAnswer', homeController.verifySecurityAnswer);
-
-app.post('/recoverPassword', homeController.recoverPassword);
-
-app.post('/userVerificationEmail', homeController.verifyUserEmail);
-
-app.post('/buyCard', homeController.buyCard);
-
+// Rutas
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
@@ -109,8 +87,9 @@ app.get('/recoverQuestion', (req, res) => {
 });
 
 app.get('/recoverPassword', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'recoverPassword.html'))
+    res.sendFile(path.join(__dirname, 'views', 'recoverPassword.html'));
 });
+
 app.get('/userVerificationEmail', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'userVerificationEmail.html'));
 });
@@ -119,24 +98,35 @@ app.get('/exchangeRate', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'exchangeRate.html'));
 });
 
+// Logout quitar cookies y redirigir a login del usuario
 app.get('/logout', (req, res) => {
     res.clearCookie('username');
-    res.redirect('/');
+    res.redirect('/login');
 });
 
+// Rutas que requieren la interacción con el controlador
+app.post('/register', homeController.registerUser);
+app.post('/login', homeController.loginUser);
+app.post('/buyServices', homeController.buyServices);
+app.post('/verify', homeController.verifyCode);
+app.post('/verifyCodeRecover', homeController.verifyCodeRecover);
+app.post('/recoverEnterEmail', homeController.recoverEnterEmail);
+app.post('/verifySecurityAnswer', homeController.verifySecurityAnswer);
+app.post('/recoverPassword', homeController.recoverPassword);
+app.post('/userVerificationEmail', homeController.verifyUserEmail);
+app.post('/buyCard', homeController.buyCard);
+app.post('/find_persons', homeController.buscarPersona);
 app.get('/getUserInfo', homeController.getUserInfo);
-
 app.get('/showCard', homeController.showCard);
-
 app.get('/showServices', homeController.showServices);
-
 app.get('/getSecurityQuestion', homeController.getSecurityQuestion);
-
 app.get('/getTotalPrice', homeController.getTotalPriceByUsername);
+app.get('/obtenerValorCompra', homeController.obtenerValorCompra);
+app.get('/obtenerValorVenta', homeController.obtenerValorVenta);
 
-// app.get('/getExchangeRate', homeController.obtenerValorCompra);
-// Escucha en el puerto 3000
-port = 3000
+
+// Iniciar el servidor
+const port = 3000;
 app.listen(port, () => {
     console.log(`Servidor iniciado en http://localhost:${port}`);
 });

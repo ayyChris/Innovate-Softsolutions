@@ -6,6 +6,122 @@ const { send } = require('process');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 
+const xml2js = require('xml2js');
+
+// Obtener la fecha actual en el formato dd/mm/yyyy
+const today = new Date();
+const day = String(today.getDate()).padStart(2, '0');
+const month = String(today.getMonth() + 1).padStart(2, '0');
+const year = today.getFullYear();
+const fechaActual = `${day}/${month}/${year}`;
+
+const nombre = 'Christian';
+const subNiveles = 'N';
+const correoElectronico = 'chrisbf11@gmail.com';
+const token = 'C3OC228T6A';
+
+async function buscarPersona(req, res) {
+    try {
+        const { full_name } = req.body; // Asegúrate de que este sea el nombre del campo en tu formulario HTML
+        const response = await axios.get('http://localhost:5000/find_persons', {
+            params: {
+                full_name: full_name // Pasa el nombre como parámetro de la consulta GET
+            }
+        });
+
+        // Maneja la respuesta del web service de Python aquí
+        const personaEncontrada = response.data;
+        console.log('Persona encontrada:', personaEncontrada);
+        // Devuelve la respuesta al cliente
+        res.status(200).json(personaEncontrada);
+    } catch (error) {
+        console.error('Error al buscar persona:', error);
+        res.status(500).json({ error: 'Error al buscar persona' });
+    }
+}
+
+
+async function obtenerValorCompra(req, res) {
+    try {
+        const indicador = 317;
+
+        const response = await axios.get('https://gee.bccr.fi.cr/Indicadores/Suscripciones/WS/wsindicadoreseconomicos.asmx/ObtenerIndicadoresEconomicosXML', {
+            params: {
+                indicador: indicador,
+                fechaInicio: fechaActual,
+                fechaFinal: fechaActual,
+                nombre: nombre,
+                subNiveles: subNiveles,
+                correoElectronico: correoElectronico,
+                token: token
+            }
+        });
+
+        const xmlData = await xml2js.parseStringPromise(response.data);
+
+        let valorCompraDolar;
+        if (xmlData && xmlData.string && xmlData.string._) {
+            const datos = xmlData.string._;
+            const parser = new xml2js.Parser({ explicitArray: false });
+            parser.parseString(datos, (err, result) => {
+                if (err) {
+                    console.error('Error al parsear la respuesta XML:', err);
+                    return res.status(500).json({ error: 'Error al parsear la respuesta XML' });
+                }
+                valorCompraDolar = parseFloat(result.Datos_de_INGC011_CAT_INDICADORECONOMIC.INGC011_CAT_INDICADORECONOMIC.NUM_VALOR);
+                res.status(200).json({ valorCompra: valorCompraDolar }); // Aquí corregido
+            });
+        } else {
+            console.error('Estructura de respuesta XML inesperada:', xmlData);
+            res.status(500).json({ error: 'Estructura de respuesta XML inesperada' });
+        }
+    } catch (error) {
+        console.error('Error al obtener el valor de compra del dólar:', error);
+        res.status(500).json({ error: 'Error al obtener el valor de compra del dólar' });
+    }
+}
+
+async function obtenerValorVenta(req, res) {
+    try {
+        const indicador = 318;
+
+        const response = await axios.get('https://gee.bccr.fi.cr/Indicadores/Suscripciones/WS/wsindicadoreseconomicos.asmx/ObtenerIndicadoresEconomicosXML', {
+            params: {
+                indicador: indicador,
+                fechaInicio: fechaActual,
+                fechaFinal: fechaActual,
+                nombre: nombre,
+                subNiveles: subNiveles,
+                correoElectronico: correoElectronico,
+                token: token
+            }
+        });
+
+        const xmlData = await xml2js.parseStringPromise(response.data);
+
+        let valorVentaDolar;
+        if (xmlData && xmlData.string && xmlData.string._) {
+            const datos = xmlData.string._;
+            const parser = new xml2js.Parser({ explicitArray: false });
+            parser.parseString(datos, (err, result) => {
+                if (err) {
+                    console.error('Error al parsear la respuesta XML:', err);
+                    return res.status(500).json({ error: 'Error al parsear la respuesta XML' });
+                }
+                valorVentaDolar = parseFloat(result.Datos_de_INGC011_CAT_INDICADORECONOMIC.INGC011_CAT_INDICADORECONOMIC.NUM_VALOR);
+                res.status(200).json({ valorVentaDolar: valorVentaDolar });
+            });
+        } else {
+            console.error('Estructura de respuesta XML inesperada:', xmlData);
+            res.status(500).json({ error: 'Estructura de respuesta XML inesperada' });
+        }
+    } catch (error) {
+        console.error('Error al obtener el valor de venta del dólar:', error);
+        res.status(500).json({ error: 'Error al obtener el valor de venta del dólar' });
+    }
+}
+
+
 async function registerUser(req, res) {
     try {
         console.log(req.body);
@@ -448,4 +564,7 @@ module.exports = {
     buyCard,
     getTotalPriceByUsername,
     showServices,
+    obtenerValorCompra,
+    obtenerValorVenta,
+    buscarPersona,
 };
