@@ -522,24 +522,39 @@ async function buyCard(req, res) {
         // Convertir los IDs de servicio a un array
         const serviceIdsArray = serviceIds.split(',');
 
-        // Actualizar el estado de compra en la base de datos
-        await db.buyCardDB(serviceIdsArray);
+        console.log("serviceIdsArray", serviceIdsArray);
+        console.log("paymentData", paymentData);
+        // Realizar la solicitud al servicio web de Python para verificar la tarjeta y los fondos
+        const response = await axios.post('http://localhost:5000/verificar_tarjeta_fondos', {
+            username: username,
+            serviceIds: serviceIdsArray,
+            paymentData: paymentData
+        });
 
-        // Parsear los datos de pago
-        const paymentInfo = JSON.parse(paymentData);
-        const { method, details } = paymentInfo;
+        // Verificar la respuesta del servicio web de Python
+        if (response.data.verificado) {
+            // Si la tarjeta y los fondos son suficientes, continuar con la compra
+            // Actualizar el estado de compra en la base de datos
+            await db.buyCardDB(serviceIdsArray);
 
-        // Realizar la compra
-        for (const serviceId of serviceIdsArray) {
-            await db.insertPurchaseDB(serviceId, username, method, JSON.stringify(details));
+            // Parsear los datos de pago
+            const paymentInfo = JSON.parse(paymentData);
+            const { method, details } = paymentInfo;
+
+            // Realizar la compra
+            for (const serviceId of serviceIdsArray) {
+                await db.insertPurchaseDB(serviceId, username, method, JSON.stringify(details));
+            }
+
+            await db.logAction(username, `Compra de ${serviceIdsArray}`, 'Exitosa');
+            // Enviar una respuesta al cliente
+            res.send('<script>alert("Servicios comprados correctamente, por favor ingresa a Mis servicios para darle seguimiento"); window.location.href = "/myServices";</script>');
+        } else {
+            await db.logAction(username, `Compra de ${serviceIdsArray}`, 'Fallida');
+            res.send('<script>alert("¡Tarjeta no válida o fondos insuficientes!"); window.location.href = "/card";</script>');
         }
-
-        await db.logAction(username, `Compra de ${serviceIdsArray}`, 'Exitosa');
-        // Enviar una respuesta al cliente
-        res.send('<script>alert("Servicios comprados correctamente, por favor ingresa a Mis servicios para darle seguimiento"); window.location.href = "/myServices";</script>');
     } catch (error) {
-        console.error('Error al procesar la compra:', error);
-        res.status(500).json({ error: 'Se produjo un error al procesar la compra' });
+        res.send('<script>alert("¡Tarjeta no válida o fondos insuficientes!"); window.location.href = "/card";</script>');
     }
 }
 
