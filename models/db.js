@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const config = {
     user: 'sa',
     password: 'password1234567',
-    server: 'localhost',
+    server: 'CHRIS-PC',
     database: 'InnovateSoft Solutions',
     options: {
         trustServerCertificate: true
@@ -105,11 +105,11 @@ async function getUserInfoDB(username) {
                 username: result.recordset[0].username,
                 phone: result.recordset[0].phone
             };
+            console.log(`Información de ${username} obtenida de la base de datos.`);
             return userInfo;
         } else {
             return null; // No se encontró ningún usuario con el nombre de usuario proporcionado
         }
-        console.log(`Información de ${username} obtenida de la base de datos.`);
     } catch (error) {
         console.error('Error al obtener la información del usuario:', error);
         throw error;
@@ -149,11 +149,11 @@ async function showCardDB(username) {
                 id: record.id,
                 service: record.service
             }));
+            console.log(`Información del carrito de ${username} obtenida de la base de datos.`);
             return cardInfoArray;
         } else {
             return []; // Devuelve un array vacío si no se encontraron registros
         }
-        console.log(`Información del carrito de ${username} obtenida de la base de datos.`);
     } catch (error) {
         console.error('Error al obtener la información del usuario:', error);
         throw error;
@@ -174,11 +174,11 @@ async function showServicesDB(username) {
                 id: record.id,
                 service: record.service
             }));
+            console.log(`Información del carrito de ${username} obtenida de la base de datos.`);
             return servicesInfoArray;
         } else {
             return []; // Devuelve un array vacío si no se encontraron registros
         }
-        console.log(`Información del carrito de ${username} obtenida de la base de datos.`);
     } catch (error) {
         console.error('Error al obtener la información del usuario:', error);
         throw error;
