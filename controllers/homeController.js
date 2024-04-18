@@ -315,6 +315,7 @@ async function showServices(req, res) {
 
 function generateVerificationCode(length) {
     return crypto.randomBytes(length).toString('hex').slice(0, length);
+
 }
 
 async function sendVerificationEmail(username, verificationCode, subject, emailText) {
@@ -340,7 +341,7 @@ async function sendVerificationEmail(username, verificationCode, subject, emailT
         };
 
 
-
+        console.log("Codigo", verificationCode);
         // Enviar el correo electrónico
         await transporter.sendMail(mailOptions);
     } catch (error) {

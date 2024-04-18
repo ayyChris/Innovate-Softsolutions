@@ -1,6 +1,6 @@
 const sql = require('mssql');
 const nodemailer = require('nodemailer');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Configuración de la conexión a la base de datos
 const config = {
