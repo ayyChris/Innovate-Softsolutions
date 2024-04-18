@@ -98,6 +98,10 @@ app.get('/exchangeRate', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'exchangeRate.html'));
 });
 
+app.get('/manifest.json', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manifest.json'));
+});
+
 // Logout quitar cookies y redirigir a login del usuario
 app.get('/logout', (req, res) => {
     res.clearCookie('username');
