@@ -3,7 +3,7 @@ const db = require('../models/db.js'); // Ruta relativa al archivo db.js
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const { send } = require('process');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const axios = require('axios');
 
 const xml2js = require('xml2js');
