@@ -10,7 +10,7 @@ db_config = {
     "Server": "innovatesoftsolutions.database.windows.net",
     "Database": "InnovateSoft Solutions",
     "UID": "chris",
-    "PWD": "Fisic@11",
+    "PWD": "Fisic@11",  # Asegúrate de reemplazar "{your_password}" con tu contraseña real
 }
 
 
