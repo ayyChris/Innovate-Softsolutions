@@ -4,14 +4,18 @@ const bcrypt = require('bcryptjs');
 
 // Configuración de la conexión a la base de datos
 const config = {
-    user: 'sa',
-    password: 'password1234567',
-    server: 'CHRIS-PC',
+    server: 'innovatesoftsolutions.database.windows.net',
     database: 'InnovateSoft Solutions',
+    user: 'chris',
+    password: 'Fisic@11', // Asegúrate de reemplazar "{your_password}" con tu contraseña real
     options: {
-        trustServerCertificate: true
+        encrypt: true, // Habilita la encriptación
+        trustServerCertificate: false, // Establece esto en false para habilitar la validación del certificado del servidor
+        enableArithAbort: true // Habilita la opción para evitar el error de "Arithmetic overflow error converting expression to data type int"
     }
 };
+
+
 
 // Función para conectar a la base de datos y verificar la conexión
 async function connectToDatabase() {

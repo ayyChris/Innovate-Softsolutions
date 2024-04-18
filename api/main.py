@@ -7,10 +7,10 @@ app = Flask(__name__)
 # Configura la conexión a la base de datos SQL Server
 db_config = {
     "Driver": "{ODBC Driver 17 for SQL Server}",
-    "Server": "localhost",
+    "Server": "innovatesoftsolutions.database.windows.net",
     "Database": "InnovateSoft Solutions",
-    "UID": "sa",
-    "PWD": "password1234567",
+    "UID": "chris",
+    "PWD": "Fisic@11",
 }
 
 
