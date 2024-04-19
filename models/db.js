@@ -7,11 +7,11 @@ const config = {
     server: 'innovatesoftsolutions.database.windows.net',
     database: 'InnovateSoft Solutions',
     user: 'chris',
-    password: 'Fisic@11', // Asegúrate de reemplazar "{your_password}" con tu contraseña real
+    password: 'Fisic@11',
     options: {
-        encrypt: true, // Habilita la encriptación
-        trustServerCertificate: false, // Establece esto en false para habilitar la validación del certificado del servidor
-        enableArithAbort: true // Habilita la opción para evitar el error de "Arithmetic overflow error converting expression to data type int"
+        encrypt: true,
+        trustServerCertificate: false,
+        enableArithAbort: true
     }
 };
 
