@@ -126,35 +126,30 @@ async function registerUser(req, res) {
         // Obtener los datos del formulario de registro
         const { username, password, full_name, email, phone, security_question, security_answer } = req.body;
 
-        const hashedPassword = await bcrypt.hash(password, 10); // 10 es el número de rondas de hashing
-        const hashedSecurityAnswer = await bcrypt.hash(security_answer, 10);
+        // Verificar si el nombre de usuario ya está en uso
+        const isUsernameTaken = await db.isUsernameTaken(username);
 
-        // Hacer una solicitud POST al servidor Flask para registrar al usuario
-        const response = await axios.post('http://localhost:5000/register', {
-            username,
-            password: hashedPassword,
-            full_name,
-            email,
-            phone,
-            security_question,
-            security_answer: hashedSecurityAnswer
-        });
-
-        // Verificar la respuesta del servidor Flask
-        if (response.status === 200) {
-            // Si la respuesta es exitosa, redirigir a una página de éxito
-            res.send('<script>alert("¡Registro exitoso! Por favor al ingresar sesión verifique su correo electrónico."); window.location.href = "/login";</script>');
-        } else {
-            // Si hay un error en la respuesta del servidor, manejarlo adecuadamente
-            console.error('Error en el registro de usuario:', response.data);
-            res.status(response.status).send(response.data);
+        if (isUsernameTaken) {
+            // Enviar una SweetAlert de error si el nombre de usuario ya está en uso
+            res.send('<script>alert("¡Nombre de usuario ya en uso!"); window.location.href = "/register";</script>');
+            return;
         }
+
+        // Registrar al usuario en la base de datos
+        await db.registerUserDB(username, password, full_name, email, phone, security_question, security_answer);
+
+        await db.logAction(username, 'Registro', 'Exitoso');
+        // Redirigir al usuario a la página de inicio de sesión
+        res.redirect('/login');
+
     } catch (error) {
         console.error('Error al registrar usuario:', error);
+        db.logAction(username, 'Registro', 'Fallido');
         // Manejar el error de alguna manera, como renderizar una página de error o redirigir a otra página
         res.status(500).send('Error al registrar usuario');
     }
 }
+
 
 
 async function loginUser(req, res) {
@@ -521,41 +516,27 @@ async function buyCard(req, res) {
         // Convertir los IDs de servicio a un array
         const serviceIdsArray = serviceIds.split(',');
 
-        console.log("serviceIdsArray", serviceIdsArray);
-        console.log("paymentData", paymentData);
-        // Realizar la solicitud al servicio web de Python para verificar la tarjeta y los fondos
-        const response = await axios.post('http://localhost:5000/verificar_tarjeta_fondos', {
-            username: username,
-            serviceIds: serviceIdsArray,
-            paymentData: paymentData
-        });
+        // Actualizar el estado de compra en la base de datos
+        await db.buyCardDB(serviceIdsArray);
 
-        // Verificar la respuesta del servicio web de Python
-        if (response.data.verificado) {
-            // Si la tarjeta y los fondos son suficientes, continuar con la compra
-            // Actualizar el estado de compra en la base de datos
-            await db.buyCardDB(serviceIdsArray);
+        // Parsear los datos de pago
+        const paymentInfo = JSON.parse(paymentData);
+        const { method, details } = paymentInfo;
 
-            // Parsear los datos de pago
-            const paymentInfo = JSON.parse(paymentData);
-            const { method, details } = paymentInfo;
-
-            // Realizar la compra
-            for (const serviceId of serviceIdsArray) {
-                await db.insertPurchaseDB(serviceId, username, method, JSON.stringify(details));
-            }
-
-            await db.logAction(username, `Compra de ${serviceIdsArray}`, 'Exitosa');
-            // Enviar una respuesta al cliente
-            res.send('<script>alert("Servicios comprados correctamente, por favor ingresa a Mis servicios para darle seguimiento"); window.location.href = "/myServices";</script>');
-        } else {
-            await db.logAction(username, `Compra de ${serviceIdsArray}`, 'Fallida');
-            res.send('<script>alert("¡Tarjeta no válida o fondos insuficientes!"); window.location.href = "/card";</script>');
+        // Realizar la compra
+        for (const serviceId of serviceIdsArray) {
+            await db.insertPurchaseDB(serviceId, username, method, JSON.stringify(details));
         }
+
+        await db.logAction(username, `Compra de ${serviceIdsArray}`, 'Exitosa');
+        // Enviar una respuesta al cliente
+        res.send('<script>alert("Servicios comprados correctamente, por favor ingresa a Mis servicios para darle seguimiento"); window.location.href = "/myServices";</script>');
     } catch (error) {
-        res.send('<script>alert("¡Tarjeta no válida o fondos insuficientes!"); window.location.href = "/card";</script>');
+        console.error('Error al procesar la compra:', error);
+        res.status(500).json({ error: 'Se produjo un error al procesar la compra' });
     }
 }
+
 
 
 // Exportar la función del controlador

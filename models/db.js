@@ -71,6 +71,27 @@ async function loginUserDB(username, password) {
     }
 }
 
+async function isUsernameTaken(username) {
+    try {
+        const pool = await sql.connect(config);
+        const query = `
+            SELECT username
+            FROM Users
+            WHERE username = '${username}'
+        `;
+        const result = await pool.request().query(query);
+        // Si la consulta devuelve algún resultado, significa que las credenciales son válidas
+        if (result && result.recordset.length > 0) {
+            return true; // El usuario existe
+        } else {
+            return false; // El usuario no existe
+        }
+    } catch (error) {
+        console.error('Error al verificar el estado del usuario:', error);
+        throw error;
+    }
+}
+
 async function isUserVerified(username) {
     try {
         const pool = await sql.connect(config);
@@ -590,5 +611,6 @@ module.exports = {
     getTotalPriceByUsernameDB,
     buyCardDB,
     insertPurchaseDB,
-    showServicesDB
+    showServicesDB,
+    isUsernameTaken
 };
