@@ -21,17 +21,19 @@ const token = 'C3OC228T6A';
 async function buscarPersona(req, res) {
     try {
         const { full_name } = req.body; // Asegúrate de que este sea el nombre del campo en tu formulario HTML
-        const response = await axios.get('http://localhost:5000/find_persons', {
-            params: {
-                full_name: full_name // Pasa el nombre como parámetro de la consulta GET
-            }
-        });
 
-        // Maneja la respuesta del web service de Python aquí
-        const personaEncontrada = response.data;
-        console.log('Persona encontrada:', personaEncontrada);
-        // Devuelve la respuesta al cliente
-        res.status(200).json(personaEncontrada);
+        // Llama a la función buscarPersonaDB para obtener la información de la persona
+        const personaEncontrada = await db.buscarPersonaDB(full_name);
+
+        // Verifica si se encontró la persona
+        if (personaEncontrada) {
+            console.log('Persona encontrada:', personaEncontrada);
+            // Devuelve la respuesta al cliente
+            res.status(200).json(personaEncontrada);
+        } else {
+            console.log(`No se encontró ninguna persona con el nombre ${full_name}`);
+            res.status(404).json({ error: `No se encontró ninguna persona con el nombre ${full_name}` });
+        }
     } catch (error) {
         console.error('Error al buscar persona:', error);
         res.status(500).json({ error: 'Error al buscar persona' });

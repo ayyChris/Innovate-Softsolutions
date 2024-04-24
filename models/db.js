@@ -563,8 +563,7 @@ async function insertPurchaseDB(serviceId, username, paymentMethod, paymentMetho
 
 async function getLocationData() {
     try {
-        // Aquí realizarías la consulta a la base de datos para obtener los datos de la tabla Location
-        const locationData = await Location.findAll(); // Ejemplo de uso de Sequelize, reemplaza con tu ORM o consulta directa a la base de datos
+        const locationData = await Location.findAll();
 
         // Convertir los datos a formato JSON
         const jsonData = locationData.map(location => {
@@ -579,6 +578,36 @@ async function getLocationData() {
         return jsonData;
     } catch (error) {
         console.error('Error al obtener datos de ubicación:', error);
+        throw error;
+    }
+}
+
+async function buscarPersonaDB(fullName) {
+    try {
+        // Realiza una consulta SQL para obtener la información de la persona proporcionada
+        const query = `SELECT id_person, full_name, email, phone, provincias, cantones, distritos FROM Persons WHERE full_name = '${fullName}'`;
+
+        // Ejecuta la consulta
+        const result = await sql.query(query);
+
+        // Si la consulta devuelve algún resultado, retorna la información de la persona
+        if (result && result.recordset.length > 0) {
+            const personaInfo = {
+                id_person: result.recordset[0].id_person,
+                full_name: result.recordset[0].full_name,
+                email: result.recordset[0].email,
+                phone: result.recordset[0].phone,
+                provincias: result.recordset[0].provincias,
+                cantones: result.recordset[0].cantones,
+                distritos: result.recordset[0].distritos
+            };
+            console.log(`Información de ${fullName} obtenida de la base de datos.`);
+            return personaInfo;
+        } else {
+            return null; // No se encontró ninguna persona con el nombre proporcionado
+        }
+    } catch (error) {
+        console.error('Error al obtener la información de la persona:', error);
         throw error;
     }
 }
@@ -612,5 +641,6 @@ module.exports = {
     buyCardDB,
     insertPurchaseDB,
     showServicesDB,
-    isUsernameTaken
+    isUsernameTaken,
+    buscarPersonaDB
 };
