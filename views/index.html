@@ -32,6 +32,10 @@
   <!-- responsive style -->
   <link href="css/responsive.css" rel="stylesheet" />
   <link rel="manifest" href="/manifest.json">
+  <!-- Agregar Intro.js -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/4.1.0/introjs.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/4.1.0/intro.min.js"></script>
+
 </head>
 
 <body>
@@ -801,6 +805,52 @@
       loginLink.textContent = username;
     }
   </script>
+  <script>
+    // Función para verificar si el onboarding ya se ha completado
+    function verificarOnboarding() {
+      // Verificar si ya se ha completado el onboarding
+      var onboardingCompletado = localStorage.getItem('onboardingCompletado');
+
+      if (!onboardingCompletado) {
+        // Si el onboarding no se ha completado, iniciar el onboarding
+        iniciarOnboarding();
+
+        // Marcar el onboarding como completado
+        localStorage.setItem('onboardingCompletado', 'true');
+      }
+    }
+
+    // Función para iniciar el onboarding
+    function iniciarOnboarding() {
+      // Crear un objeto Intro.js
+      var intro = introJs();
+
+      // Definir los pasos del onboarding
+      intro.setOptions({
+        steps: [
+          {
+            intro: "¡Bienvenido a InnovateSoft Solutions! Este es un breve recorrido por nuestra aplicación."
+          },
+          {
+            element: document.querySelector('.navbar-brand'),
+            intro: "Este es nuestro logo. Haciendo clic aquí puedes volver a la página de inicio en cualquier momento."
+          },
+          {
+            element: document.querySelector('.nav-item.active'),
+            intro: "Estás en la página de inicio. Puedes explorar otras secciones de la aplicación desde aquí."
+          },
+          // Agrega más pasos según sea necesario
+        ]
+      });
+
+      // Iniciar el onboarding
+      intro.start();
+    }
+
+    // Esperar a que se cargue el contenido de la página y luego verificar si se debe iniciar el onboarding
+    document.addEventListener('DOMContentLoaded', verificarOnboarding);
+  </script>
+
 </body>
 
 </html>
