@@ -15,8 +15,6 @@ const config = {
     }
 };
 
-
-
 // Función para conectar a la base de datos y verificar la conexión
 async function connectToDatabase() {
     try {
@@ -27,8 +25,6 @@ async function connectToDatabase() {
         console.error('Error al conectar a la base de datos:', error);
     }
 }
-
-// Función para insertar un usuario en la base de datos
 
 // Función para insertar un usuario en la base de datos con contraseña encriptada
 async function registerUserDB(username, password, full_name, email, phone, security_question, security_answer) {
@@ -45,7 +41,6 @@ async function registerUserDB(username, password, full_name, email, phone, secur
         throw error; // Puedes manejar el error según sea necesario
     }
 }
-
 
 // Controlador para manejar la solicitud de inicio de sesión
 async function loginUserDB(username, password) {
